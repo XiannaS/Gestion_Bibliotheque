@@ -1,18 +1,97 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
+  <!-- Informations sur le projet -->
   <groupId>bibli</groupId>
   <artifactId>bibli</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+
   <build>
+    <!-- Répertoire source du projet Java -->
     <sourceDirectory>src</sourceDirectory>
+
+    <!-- Plugins de compilation -->
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <release>23</release>
+          <release>23</release> <!-- Spécifiez la version de Java que vous utilisez -->
         </configuration>
       </plugin>
     </plugins>
   </build>
+
+  <!-- Dépendances de votre projet -->
+  <dependencies>
+    <!-- Dépendance pour SwingX -->
+    <dependency>
+      <groupId>org.swinglabs</groupId>
+      <artifactId>swingx</artifactId>
+      <version>1.6.1</version>
+    </dependency>
+
+    <!-- Dépendance pour JCalendar -->
+    <dependency>
+      <groupId>com.toedter</groupId>
+      <artifactId>jcalendar</artifactId>
+      <version>1.4</version>
+    </dependency>
+
+    <!-- Dépendance pour JUnit 5 (Tests unitaires) -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.9.0</version>
+      <scope>test</scope>
+    </dependency>
+
+ 
+    <!-- Dépendance pour FlatLaf SwingX -->
+    <dependency>
+      <groupId>com.formdev</groupId>
+      <artifactId>flatlaf-swingx</artifactId>
+      <version>3.5.2</version>
+    </dependency>
+
+    <!-- Dépendance pour JFreeChart -->
+    <dependency>
+      <groupId>org.jfree</groupId>
+      <artifactId>jfreechart</artifactId>
+      <version>1.5.3</version>
+    </dependency>
+
+    <!-- Dépendance pour Bcrypt (pour le hashing des mots de passe) -->
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.4</version>
+    </dependency>
+
+ 
+    <!-- Dépendance FlatLaf -->
+    <dependency>
+      <groupId>com.formdev</groupId>
+      <artifactId>flatlaf</artifactId>
+      <version>3.5.2</version>
+    </dependency>
+
+    <!-- Dépendance FlatLaf IntelliJ Themes -->
+    <dependency>
+        <groupId>com.formdev</groupId>
+        <artifactId>flatlaf-intellij-themes</artifactId>
+        <version>2.0</version>  <!-- Use the latest version available -->
+    </dependency>
+ 
+    
+  </dependencies>
 </project>

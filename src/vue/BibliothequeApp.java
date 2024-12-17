@@ -5,12 +5,17 @@ import controllers.LivreController;
 import controllers.UserController;
 
 import javax.swing.*;
+import com.formdev.flatlaf.FlatDarkLaf;
+
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatDraculaIJTheme; // Importer le thème Dracula
 
 public class BibliothequeApp extends JFrame {
     private JTabbedPane tabbedPane;
-
+    private JButton toggleThemeButton;
+    private boolean isDracula = false; // Suivi du thème actuel
+    private boolean isDarkMode = true;
     public BibliothequeApp() {
-    	
         setTitle("Gestion de Bibliothèque");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -69,13 +74,61 @@ public class BibliothequeApp extends JFrame {
             tabbedPane.addTab("Emprunts", empruntView);
         }
 
+        // Ajouter un bouton pour basculer entre les thèmes
+        toggleThemeButton = new JButton("Basculer le thème");
+        toggleThemeButton.addActionListener(e -> toggleTheme());  // Action pour basculer entre les thèmes
+        add(toggleThemeButton, "South"); // Placer le bouton en bas de la fenêtre
+
         add(tabbedPane);
     }
+    public boolean isDarkMode() {
+        return isDarkMode;
+    }
 
+    public void toggleTheme() {
+        try {
+            // Si le thème est déjà activé, on ne fait rien
+            if (isDarkMode) {
+                if (!(UIManager.getLookAndFeel() instanceof FlatLightLaf)) {
+                    UIManager.setLookAndFeel(new FlatLightLaf());
+                    SwingUtilities.updateComponentTreeUI(this);
+                }
+            } else {
+                if (!(UIManager.getLookAndFeel() instanceof FlatDraculaIJTheme)) {
+                    UIManager.setLookAndFeel(new FlatDraculaIJTheme());
+                    SwingUtilities.updateComponentTreeUI(this);
+                }
+            }
+            isDarkMode = !isDarkMode;
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void applyDraculaTheme() {
+        try {
+            // Si le thème actuel n'est pas déjà le Dracula, l'appliquer
+            if (!(UIManager.getLookAndFeel() instanceof FlatDraculaIJTheme)) {
+                UIManager.setLookAndFeel(new FlatDraculaIJTheme());
+                isDarkMode = true;
+                SwingUtilities.updateComponentTreeUI(this);
+            }
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+    }
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            BibliothequeApp app = new BibliothequeApp();
-            app.setVisible(true);
+            try {
+                // Appliquer le thème par défaut (par exemple, FlatLightLaf ou autre)
+                UIManager.setLookAndFeel(new FlatLightLaf()); // Par défaut, ici on met un thème clair
+
+                // Créer et afficher l'application
+                BibliothequeApp app = new BibliothequeApp();
+                app.setVisible(true);
+            } catch (UnsupportedLookAndFeelException e) {
+                e.printStackTrace();
+            }
         });
     }
 }
