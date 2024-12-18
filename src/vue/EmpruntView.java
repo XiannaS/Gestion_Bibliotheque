@@ -80,43 +80,115 @@ public class EmpruntView extends JPanel {
         setupListeners();
     }
 
-    private void setupListeners() {
-        // Écouteur pour le bouton de recherche
-        searchButton.addActionListener(e -> {
-            String searchText = searchField.getText().trim();
-            String searchType = (String) searchTypeComboBox.getSelectedItem(); // Récupérer le type de recherche
+private void setupListeners() {
+    // Écouteur pour le bouton de recherche
+    searchButton.addActionListener(e -> {
+        String searchText = searchField.getText().trim();
+        String searchType = (String) searchTypeComboBox.getSelectedItem(); // Récupérer le type de recherche
 
-            if (!searchText.isEmpty()) {
-                List<Emprunt> resultats = empruntController.rechercherEmprunts(searchType, searchText); // Passer le type de recherche
-                tableModel.setRowCount(0); // Vider le tableau
-                for (Emprunt emprunt : resultats) {
-                    // Récupérer le livre par ID
-                    Livre livre = empruntController.getLivreById(emprunt.getLivreId());
-                    String livreNom = (livre != null) ? livre.getTitre() : "Livre non trouvé";
+        if (!searchText.isEmpty()) {
+            List<Emprunt> resultats = empruntController.rechercherEmprunts(searchType, searchText); // Passer le type de recherche
+            tableModel.setRowCount(0); // Vider le tableau
+            for (Emprunt emprunt : resultats) {
+                // Récupérer le livre par ID
+                Livre livre = empruntController.getLivreById(emprunt.getLivreId());
+                String livreNom = (livre != null) ? livre.getTitre() : "Livre non trouvé";
 
-                    // Récupérer l'utilisateur par ID
-                    User user = empruntController.getUserById(String.valueOf(emprunt.getUserId()));
-                    String userNom = (user != null) ? user.getNom() : "Utilisateur non trouvé";
+                // Récupérer l'utilisateur par ID
+                User user = empruntController.getUserById(String.valueOf(emprunt.getUserId()));
+                String userNom = (user != null) ? user.getNom() : "Utilisateur non trouvé";
 
-                    // Ajouter une ligne au modèle de table
-                    tableModel.addRow(new Object[]{
-                        emprunt.getId(),
-                        livreNom,
-                        userNom,
-                        emprunt.getDateEmprunt(),
-                        emprunt.getDateRetourPrevue(),
-                        emprunt.getDateRetourEffective(),
-                        emprunt.isRendu() ? "Oui" : "Non",
-                        emprunt.getPenalite()
-                    });
-                }
-            } else {
-                chargerEmprunts("Tous"); // Recharger tous les emprunts si le champ est vide
+                // Ajouter une ligne au modèle de table
+                tableModel.addRow(new Object[]{
+                    emprunt.getId(),
+                    livreNom,
+                    userNom,
+                    emprunt.getDateEmprunt(),
+                    emprunt.getDateRetourPrevue(),
+                    emprunt.getDateRetourEffective(),
+                    emprunt.isRendu() ? "Oui" : "Non",
+                    emprunt.getPenalite()
+                });
             }
-        });
- 
-    }
+        } else {
+            chargerEmprunts("Tous"); // Recharger tous les emprunts si le champ est vide
+        }
+    });
 
+    // Écouteur pour le bouton "Emprunter Livre"
+    emprunterButton.addActionListener(e -> {
+        // Créer un formulaire pour saisir l'ID du livre et l'ID de l'utilisateur
+        JTextField livreIdField = new JTextField(10);
+        JTextField userIdField = new JTextField(10);
+        
+        JPanel myPanel = new JPanel();
+        myPanel.setLayout(new GridLayout(2, 2)); // Utiliser un GridLayout pour aligner les champs
+        myPanel.add(new JLabel("ID Livre:"));
+        myPanel.add(livreIdField);
+        myPanel.add(new JLabel("ID Utilisateur:"));
+        myPanel.add(userIdField);
+        
+        int result = JOptionPane.showConfirmDialog(null, myPanel, "Emprunter Livre", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                int livreId = Integer.parseInt(livreIdField.getText().trim());
+                String userId = userIdField.getText().trim();
+
+                // Récupérer le livre et l'utilisateur
+                Livre livre = empruntController.getLivreById(livreId);
+                User user = empruntController.getUserById(userId); // Assurez-vous que userId est de type String
+
+                if (livre != null && user != null) {
+                    empruntController.emprunterLivre(livre, user);
+                    chargerEmprunts("Tous"); // Recharger les emprunts après emprunt
+                } else {
+                    JOptionPane.showMessageDialog(this, "Livre ou utilisateur non trouvé.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Veuillez entrer un ID valide.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    });
+
+    // Écouteur pour le bouton "Retourner Livre"
+    retournerButton.addActionListener(e -> {
+        int selectedRow = empruntTable.getSelectedRow();
+        if (selectedRow != -1) {
+            int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0); // Assurez-vous que c'est un Integer
+            empruntController.retournerLivre(idEmprunt);
+            chargerEmprunts("Tous"); // Recharger les emprunts après retour
+        } else {
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à retourner.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+    });
+
+    // Écouteur pour le bouton "Supprimer Emprunt"
+    supprimerButton.addActionListener(e -> {
+        int selectedRow = empruntTable.getSelectedRow();
+        if (selectedRow != -1) {
+            int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0); // Assurez-vous que c'est un Integer
+            int confirm = JOptionPane.showConfirmDialog(this, "Êtes-vous sûr de vouloir supprimer cet emprunt ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                empruntController.supprimerEmprunt(idEmprunt);
+                chargerEmprunts("Tous"); // Recharger les emprunts après suppression
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à supprimer.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+    });
+
+    // Écouteur pour le bouton "Renouveler Emprunt"
+    renouvelerButton.addActionListener(e -> {
+        int selectedRow = empruntTable.getSelectedRow();
+        if (selectedRow != -1) {
+            int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0); // Assurez-vous que c'est un Integer
+            empruntController.renouvelerEmprunt(idEmprunt);
+            chargerEmprunts("Tous"); // Recharger les emprunts après renouvellement
+        } else {
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à renouveler.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+    });
+}
    
 
     private void chargerEmprunts(String triOption) {
