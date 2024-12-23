@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.swing.JOptionPane;
+
 public class LivreController {
     private LivreDAO livreDAO;
 
@@ -129,4 +131,8 @@ public class LivreController {
                                    livre.getAuteur().equalsIgnoreCase(auteur) &&
                                    livre.getAnneePublication() == annee);
     }
+    public void showMessage(String message, String title, int messageType) {
+        JOptionPane.showMessageDialog(null, message, title, messageType);
+    }
+
 }
