@@ -26,7 +26,7 @@ public class TestEmprunt {
         EmpruntController empruntController = new EmpruntController(csvFileEmprunts, csvFileLivres, csvFileUsers);
 
         // Ajouter des livres et utilisateurs pour les tests
-        ajouterLivresTest(livreController);
+        ajouterLivresTest(livreController); // Ajout des livres
         ajouterUtilisateursTest(userController);
         ajouterEmpruntsTest(); // Si vous avez une méthode pour ajouter des emprunts à l'instance
 
@@ -39,16 +39,17 @@ public class TestEmprunt {
     }
 
     public static void ajouterLivresTest(LivreController livreController) {
-        livreController.addLivre(new Livre(1, "Le Petit Prince", "Antoine de Saint-Exupéry", "Fiction", 1943, "", true));
-        livreController.addLivre(new Livre(2, "1984", "George Orwell", "Dystopie", 1949, "", true));
-        livreController.addLivre(new Livre(3, "Moby Dick", "Herman Melville", "Aventure", 1851, "", true));
-        livreController.addLivre(new Livre(4, "To Kill a Mockingbird", "Harper Lee", "Fiction", 1960, "", true));
+        // Ajouter des livres avec le constructeur approprié
+        livreController.addLivre(new Livre(1, "Le Petit Prince", "Antoine de Saint-Exupéry", "Fiction", 1943, "", "978-3-16-148410-0", "Un conte poétique", "Gallimard", 5));
+        livreController.addLivre(new Livre(2, "1984", "George Orwell", "Dystopie", 1949, "", "978-0-452-28423-4", "Un roman dystopique", "Secker & Warburg", 3));
+        livreController.addLivre(new Livre(3, "Moby Dick", "Herman Melville", "Aventure", 1851, "", "978-0-14-243724-7", "Un roman d'aventure", "Harper & Brothers", 4));
+        livreController.addLivre(new Livre(4, "To Kill a Mockingbird", "Harper Lee", "Fiction", 1960, "", "978-0-06-112008-4", "Un roman sur la justice", "J.B. Lippincott & Co.", 2));
     }
 
     public static void ajouterUtilisateursTest(UserController userController) {
         userController.addUser (new User("1", "Alice", "Dupont", "alice@example.com", "0123456789", "", Role.MEMBRE, true));
-        userController.addUser (new User("2", "Bob", "Martin", "bob@example.com", "0987654321", "",  Role.MEMBRE, true));
-        userController.addUser (new User("3", "Charlie", "Durand", "charlie@example.com", "0147258369", "",  Role.MEMBRE, true));
+        userController.addUser (new User("2", "Bob", "Martin", "bob@example.com", "0987654321", "", Role.MEMBRE, true));
+        userController.addUser (new User("3", "Charlie", "Durand", "charlie@example.com", "0147258369", "", Role.MEMBRE, true));
     }
 
     public static void ajouterEmpruntsTest() {
@@ -74,7 +75,7 @@ public class TestEmprunt {
         }
 
         // Récupérer l'utilisateur par ID
-        User user = empruntController.getUserById (userId); // Assurez-vous que cette méthode existe
+        User user = empruntController.getUserById(userId); // Assurez-vous que cette méthode existe
 
         // Vérifier si l'utilisateur existe
         if (user == null) {
@@ -86,5 +87,4 @@ public class TestEmprunt {
         empruntController.emprunterLivre(livre, user); // Passer l'objet User
         System.out.println("Livre emprunté avec succès : " + livre.getTitre());
     }
-
 }

@@ -3,10 +3,6 @@ package model;
 import controllers.LivreController;
 import controllers.UserController;
 import controllers.EmpruntController;
-import model.Livre;
-import model.User;
-import model.Emprunt;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

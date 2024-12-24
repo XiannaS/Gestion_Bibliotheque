@@ -24,6 +24,9 @@ public class LivreController {
         if (livreExists(livre.getId())) {
             throw new IllegalArgumentException("Un livre avec cet ID existe déjà.");
         }
+        if (livreExists(livre.getTitre(), livre.getAuteur(), livre.getAnneePublication(), livre.getIsbn())) {
+            throw new IllegalArgumentException("Un livre avec le même titre, auteur, année et ISBN existe déjà.");
+        }
         livreDAO.addLivre(livre); // Ajoutez le livre au DAO
     }
 
@@ -125,11 +128,12 @@ public class LivreController {
         livreDAO.deleteLivre(id); // Appel à la méthode de suppression dans le DAO
     }
     
-    public boolean livreExists(String titre, String auteur, int annee) {
+    public boolean livreExists(String titre, String auteur, int annee, String isbn) {
         return getAllLivres().stream()
                 .anyMatch(livre -> livre.getTitre().equalsIgnoreCase(titre) &&
                                    livre.getAuteur().equalsIgnoreCase(auteur) &&
-                                   livre.getAnneePublication() == annee);
+                                   livre.getAnneePublication() == annee &&
+                                   livre.getIsbn().equals(isbn));
     }
     public void showMessage(String message, String title, int messageType) {
         JOptionPane.showMessageDialog(null, message, title, messageType);

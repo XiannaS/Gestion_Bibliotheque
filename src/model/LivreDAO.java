@@ -11,36 +11,38 @@ public class LivreDAO {
         this.filePath = filePath;
         afficherLivresDisponibles();
     }
-
     public List<Livre> getAllLivres() {
         List<Livre> livres = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] fields = line.split(";");  // Supposons que les données sont séparées par des virgules
+                String[] fields = line.split(";");  // Supposons que les données sont séparées par des points-virgules
+
+                // Vérifiez que le nombre de champs est correct
+                if (fields.length < 10) {
+                    System.out.println("Ligne ignorée, nombre de champs insuffisant : " + line);
+                    continue;  // Ignore cette ligne si le nombre de champs est insuffisant
+                }
 
                 try {
                     int id = Integer.parseInt(fields[0].trim()); // ID
                     String titre = fields[1].trim();  // Titre
                     String auteur = fields[2].trim(); // Auteur
                     String genre = fields[3].trim();  // Genre
-
-                    int anneePublication = 0;
-                    try {
-                        anneePublication = Integer.parseInt(fields[4].trim()); // Année de publication
-                    } catch (NumberFormatException e) {
-                        continue;  // Ignore cette ligne si l'année est invalide
-                    }
-
+                    int anneePublication = Integer.parseInt(fields[4].trim()); // Année de publication
                     String imageUrl = fields[5].trim(); // URL de l'image
-                    boolean disponible = Boolean.parseBoolean(fields[6].trim()); // Disponible
+                    String isbn = fields[6].trim(); // ISBN
+                    String description = fields[7].trim(); // Description
+                    String editeur = fields[8].trim(); // Éditeur
+                    int totalExemplaires = Integer.parseInt(fields[9].trim()); // Nombre total d'exemplaires
 
                     // Ajout du livre à la liste si tous les champs sont valides
-                    Livre livre = new Livre(id, titre, auteur, genre, anneePublication, imageUrl, disponible);
+                    Livre livre = new Livre(id, titre, auteur, genre, anneePublication, imageUrl, isbn, description, editeur, totalExemplaires);
                     livres.add(livre);
 
                 } catch (NumberFormatException e) {
-                    continue;  // Ignore cette ligne si l'ID est invalide
+                    System.out.println("Erreur de format dans la ligne : " + line);
+                    continue;  // Ignore cette ligne si l'année ou l'ID est invalide
                 }
             }
         } catch (IOException e) {
@@ -48,7 +50,6 @@ public class LivreDAO {
         }
         return livres;
     }
-
     public void addLivre(Livre livre) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath, true))) {
             bw.write(livre.toString() + ";" + livre.isDisponible());

@@ -6,21 +6,18 @@ import model.Livre;
 import model.LivreDAO;
 import model.User;
 import model.UserDAO;
-import vue.EmpruntView;
-
 import javax.swing.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class EmpruntController {
     private EmpruntDAO empruntModel;
-    private EmpruntView empruntView;
-	private UserDAO userDAO;
+    private UserDAO userDAO;
 	private LivreDAO livreDAO;
-	 private List<Emprunt> emprunts;
+	private List<Emprunt> emprunts;
     // Constructeur
+	 
     public EmpruntController(String csvFileEmprunts, String csvFileLivres, String csvFileUsers) {
         this.empruntModel = new EmpruntDAO(csvFileEmprunts);
         this.livreDAO = new LivreDAO(csvFileLivres);
@@ -28,11 +25,15 @@ public class EmpruntController {
         this.emprunts = new ArrayList<>();
     }
 
+ 
     public void emprunterLivre(Livre livre, User user) {
+        // Vérifier si le livre est disponible
         if (!livre.isDisponible()) {
-            JOptionPane.showMessageDialog(null, "Le livre est déjà emprunté.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Aucun exemplaire disponible pour emprunt.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        
+        // Vérifier si l'utilisateur est actif
         if (!user.isStatut()) {
             JOptionPane.showMessageDialog(null, "L'utilisateur n'est pas actif.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
@@ -51,13 +52,17 @@ public class EmpruntController {
         LocalDate dateRetourPrevue = LocalDate.now().plusDays(14);
         
         // Créer l'emprunt avec tous les paramètres nécessaires
-        Emprunt emprunt = new Emprunt(0, livre.getId(), user.getId(), LocalDate.now(), dateRetourPrevue, null, false, 0);
+        Emprunt emprunt = new Emprunt(0, livre.getId(), user.getId(), LocalDate.now(), dateRetourPrevue, null, false,0);
         
+        // Ajouter l'emprunt au modèle
         empruntModel.ajouterEmprunt(emprunt);
-        livre.setDisponible(false); // Le livre n'est plus disponible
-        livreDAO.updateLivre(livre); // Mettre à jour le statut du livre dans le modèle
+        
+        // Mettre à jour la disponibilité du livre
+        livre.emprunter(); // Réduire le nombre d'exemplaires disponibles
+        livreDAO.updateLivre(livre); // Mettre à jour le livre dans le modèle
         JOptionPane.showMessageDialog(null, "Livre emprunté avec succès.");
     }
+    
     
     public void retournerLivre(int empruntId) {
         Emprunt emprunt = empruntModel.getEmpruntById(empruntId);
@@ -66,17 +71,19 @@ public class EmpruntController {
             return;
         }
 
+        // Marquer l'emprunt comme retourné
         emprunt.retournerLivre();
+        
+        // Récupérer le livre associé à l'emprunt
         Livre livre = getLivreById(emprunt.getLivreId());
         if (livre != null) {
-            livre.setDisponible(true);
-            livreDAO.updateLivre(livre);
+            livre.retourner(); // Augmenter le nombre d'exemplaires disponibles
+            livreDAO.updateLivre(livre); // Mettre à jour le livre dans le modèle
         }
 
         empruntModel.updateEmprunt(emprunt); // Mise à jour de l'emprunt
         JOptionPane.showMessageDialog(null, "Livre retourné avec succès.");
     }
-
 
     // **Nouvelle méthode : Récupérer un livre par son ID**
     public Livre getLivreById(int id) {
@@ -159,5 +166,24 @@ public class EmpruntController {
         }
         return resultats;
     }
- 
+
+    public List<Emprunt> chargerEmprunts(String triOption) {
+        List<Emprunt> emprunts;
+
+        switch (triOption) {
+            case "En cours":
+                emprunts = getEmpruntsEnCours();
+                break;
+            case "Historique":
+                emprunts = getHistoriqueEmprunts();
+                break;
+            case "Par pénalités":
+                emprunts = getEmpruntsTriesParPenalite();
+                break;
+            default:
+                emprunts = listerEmprunts();
+        }
+
+        return emprunts;
+    }
 }

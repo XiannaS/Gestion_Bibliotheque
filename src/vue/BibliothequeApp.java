@@ -5,23 +5,26 @@ import controllers.LivreController;
 import controllers.UserController;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 import com.formdev.flatlaf.FlatDarkLaf;
-
 import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.intellijthemes.FlatDraculaIJTheme; // Importer le thème Dracula
+import com.formdev.flatlaf.intellijthemes.FlatDraculaIJTheme;
 
 public class BibliothequeApp extends JFrame {
     private JTabbedPane tabbedPane;
     private JButton toggleThemeButton;
+    private JButton profileButton;
+    private JButton notificationButton;
+    private JLabel welcomeLabel;
     private boolean isDracula = false; // Suivi du thème actuel
     private boolean isDarkMode = true;
+
     public BibliothequeApp() {
         setTitle("Gestion de Bibliothèque");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-
-        tabbedPane = new JTabbedPane();
 
         // Initialisation des contrôleurs avec gestion des exceptions
         LivreController livreController = null;
@@ -53,6 +56,7 @@ public class BibliothequeApp extends JFrame {
         // Onglet pour le tableau de bord
         if (livreController != null && userController != null && empruntController != null) {
             DashboardView dashboardView = new DashboardView(livreController, userController, empruntController);
+            tabbedPane = new JTabbedPane();
             tabbedPane.addTab("Tableau de Bord", dashboardView);
         }
 
@@ -74,20 +78,43 @@ public class BibliothequeApp extends JFrame {
             tabbedPane.addTab("Emprunts", empruntView);
         }
 
-        // Ajouter un bouton pour basculer entre les thèmes
-        toggleThemeButton = new JButton("Basculer le thème");
-        toggleThemeButton.addActionListener(e -> toggleTheme());  // Action pour basculer entre les thèmes
-        add(toggleThemeButton, "South"); // Placer le bouton en bas de la fenêtre
+        // Créer un JPanel pour le header avec des icônes
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));  // Alignement à droite pour les icônes
 
-        add(tabbedPane);
+        // Icône de notification
+        notificationButton = new JButton(new ImageIcon("/src/resources/ressources/notification.png"));
+        notificationButton.setToolTipText("Notifications");
+        headerPanel.add(notificationButton);
+
+        // Icône de profil
+        profileButton = new JButton(new ImageIcon("/src/resources/ressources/profile.png"));
+        profileButton.setToolTipText("Profil");
+        profileButton.addActionListener(this::onProfileClicked);
+        headerPanel.add(profileButton);
+
+        // Icône de bascule de thème
+        toggleThemeButton = new JButton(new ImageIcon("/src/resources/ressources/mode.png"));
+        toggleThemeButton.setToolTipText("Basculer le thème");
+        toggleThemeButton.addActionListener(this::toggleTheme);
+        headerPanel.add(toggleThemeButton);
+
+        // Label de bienvenue avec le nom de l'utilisateur
+        welcomeLabel = new JLabel("Bienvenue, Nom Utilisateur !");
+        headerPanel.add(welcomeLabel);
+
+        // Ajouter le header et les onglets dans la fenêtre principale
+        add(headerPanel, BorderLayout.NORTH); // Ajouter le header en haut
+        add(tabbedPane, BorderLayout.CENTER);  // Ajouter les onglets au centre
     }
+
     public boolean isDarkMode() {
         return isDarkMode;
     }
 
-    public void toggleTheme() {
+    private void toggleTheme(ActionEvent e) {
         try {
-            // Si le thème est déjà activé, on ne fait rien
+            // Si le thème est actuellement sombre, basculer vers le thème clair
             if (isDarkMode) {
                 if (!(UIManager.getLookAndFeel() instanceof FlatLightLaf)) {
                     UIManager.setLookAndFeel(new FlatLightLaf());
@@ -100,23 +127,16 @@ public class BibliothequeApp extends JFrame {
                 }
             }
             isDarkMode = !isDarkMode;
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
+        } catch (UnsupportedLookAndFeelException ex) {
+            ex.printStackTrace();
         }
     }
 
-    private void applyDraculaTheme() {
-        try {
-            // Si le thème actuel n'est pas déjà le Dracula, l'appliquer
-            if (!(UIManager.getLookAndFeel() instanceof FlatDraculaIJTheme)) {
-                UIManager.setLookAndFeel(new FlatDraculaIJTheme());
-                isDarkMode = true;
-                SwingUtilities.updateComponentTreeUI(this);
-            }
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
+    private void onProfileClicked(ActionEvent e) {
+        // Action pour le bouton de profil (par exemple, afficher une fenêtre de profil ou de déconnexion)
+        JOptionPane.showMessageDialog(this, "Accès au profil de l'utilisateur.");
     }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {

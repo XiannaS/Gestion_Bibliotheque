@@ -162,21 +162,7 @@ private void setupListeners() {
         }
     });
 
-    // Écouteur pour le bouton "Supprimer Emprunt"
-    supprimerButton.addActionListener(e -> {
-        int selectedRow = empruntTable.getSelectedRow();
-        if (selectedRow != -1) {
-            int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0); // Assurez-vous que c'est un Integer
-            int confirm = JOptionPane.showConfirmDialog(this, "Êtes-vous sûr de vouloir supprimer cet emprunt ?", "Confirmation", JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                empruntController.supprimerEmprunt(idEmprunt);
-                chargerEmprunts("Tous"); // Recharger les emprunts après suppression
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à supprimer.", "Erreur", JOptionPane.ERROR_MESSAGE);
-        }
-    });
-
+ 
     // Écouteur pour le bouton "Renouveler Emprunt"
     renouvelerButton.addActionListener(e -> {
         int selectedRow = empruntTable.getSelectedRow();
@@ -189,46 +175,31 @@ private void setupListeners() {
         }
     });
 }
-   
+public void chargerEmprunts(String triOption) {
+    List<Emprunt> emprunts = empruntController.chargerEmprunts(triOption); // Appel à la méthode du contrôleur
+    tableModel.setRowCount(0); // Vider le tableau
 
-    private void chargerEmprunts(String triOption) {
-        tableModel.setRowCount(0); // Vider le tableau
-        List<Emprunt> emprunts;
+    for (Emprunt emprunt : emprunts) {
+        // Récupérer le livre par ID
+        Livre livre = empruntController.getLivreById(emprunt.getLivreId());
+        String livreNom = (livre != null) ? livre.getTitre() : "Livre non trouvé";
 
-        switch (triOption) {
-            case "En cours":
-                emprunts = empruntController.getEmpruntsEnCours();
-                break;
-            case "Historique":
-                emprunts = empruntController.getHistoriqueEmprunts();
-                break;
-            case "Par pénalités":
-                emprunts = empruntController.getEmpruntsTriesParPenalite();
-                break;
-            default:
-                emprunts = empruntController.listerEmprunts();
-        }
+        // Récupérer l'utilisateur par ID
+        User user = empruntController.getUserById(String.valueOf(emprunt.getUserId()));
+        String userNom = (user != null) ? user.getNom() : "Utilisateur non trouvé";
 
-        for (Emprunt emprunt : emprunts) {
-            // Récupérer le livre par ID
-            Livre livre = empruntController.getLivreById(emprunt.getLivreId());
-            String livreNom = (livre != null) ? livre.getTitre() : "Livre non trouvé";
-
-            // Récupérer l'utilisateur par ID
-            User user = empruntController.getUserById(String.valueOf(emprunt.getUserId()));
-            String userNom = (user != null) ? user.getNom() : "Utilisateur non trouvé";
-
-            // Ajouter une ligne au modèle de table
-            tableModel.addRow(new Object[]{
-                emprunt.getId(),
-                livreNom,
-                userNom,
-                emprunt.getDateEmprunt(),
-                emprunt.getDateRetourPrevue(),
-                emprunt.getDateRetourEffective(),
-                emprunt.isRendu() ? "Oui" : "Non",
-                emprunt.getPenalite()
-            });
-        }
+        // Ajouter une ligne au modèle de table
+        tableModel.addRow(new Object[]{
+            emprunt.getId(),
+            livreNom,
+            userNom,
+            emprunt.getDateEmprunt(),
+            emprunt.getDateRetourPrevue(),
+            emprunt.getDateRetourEffective(),
+            emprunt.isRendu() ? "Oui" : "Non",
+            emprunt.getPenalite()
+        });
     }
+}
+
 }
