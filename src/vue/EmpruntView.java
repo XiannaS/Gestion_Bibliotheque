@@ -75,7 +75,6 @@ public EmpruntView(EmpruntController empruntController) {
 
     // Charger les emprunts existants
     chargerEmprunts("Tous");
-
     // Configurer les actions des boutons
     setupListeners();
 }
@@ -212,6 +211,12 @@ public void chargerEmprunts(String triOption) {
             emprunt.getPenalite()
         });
     }
-}
 
+    // Revalider et repeindre la table
+    empruntTable.revalidate();
+    empruntTable.repaint();
+}
+public void chargerEmprunts() {
+    chargerEmprunts("Tous"); // Appel à la méthode existante avec "Tous" comme argument par défaut
+}
 }

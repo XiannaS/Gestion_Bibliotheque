@@ -22,16 +22,18 @@ public class LivreView extends JPanel {
     private EmpruntController empruntController; // Déclaration de EmpruntController
     private UserController userController; // Déclaration de UserController
     private EmpruntView empruntView;
-    public LivreView(LivreController livreController) {
+    
+    public LivreView(LivreController livreController, EmpruntView empruntView) {
         this.livreController = livreController;
+        this.empruntView = empruntView; // Initialiser l'instance de EmpruntView
         // Initialiser les contrôleurs ici
-        this.empruntController = new EmpruntController("C:/Eclipse/gestionbibli/src/main/resources/ressources/emprunt.csv", ""
-        		+ "C:/Eclipse/gestionbibli/src/main/resources/ressources/books.csv", 
-        		"C:/Eclipse/gestionbibli/src/main/resources/ressources/users.csv");
+        this.empruntController = new EmpruntController("C:/Eclipse/gestionbibli/src/main/resources/ressources/emprunt.csv", 
+                "C:/Eclipse/gestionbibli/src/main/resources/ressources/books.csv", 
+                "C:/Eclipse/gestionbibli/src/main/resources/ressources/users.csv");
         this.userController = new UserController("C:/Eclipse/gestionbibli/src/main/resources/ressources/users.csv");
-        this.empruntView = empruntView; 
         initUI();
     }
+    
     private void initUI() {
         setLayout(new BorderLayout());
 
@@ -235,10 +237,20 @@ public class LivreView extends JPanel {
                 User user = empruntController.getUserById(userId);
                 if (user != null) {
                     if (livre.getExemplairesDisponibles() > 0) { // Vérifier la disponibilité
-                    	empruntController.emprunterLivre(livre, user);
+                        empruntController.emprunterLivre(livre, user);
+                        
+                        // Log pour vérifier si chargerEmprunts est appelé
+                        System.out.println("Tentative de mise à jour des emprunts après emprunt du livre : " + livre.getTitre());
+                        empruntView.chargerEmprunts();
+                        // Mettre à jour les emprunts dans EmpruntView
                         if (empruntView != null) {
-                            empruntView.chargerEmprunts("Tous"); // Recharger les emprunts
+                            empruntView.chargerEmprunts(); // Recharger tous les emprunts
+                            System.out.println("Mise à jour des emprunts réussie.");
+                        } else {
+                            System.out.println("Erreur : empruntView est null.");
                         }
+
+                        // Mettre à jour l'affichage des détails
                         showLivreDetails(livre); // Mettre à jour l'affichage des détails
                     } else {
                         JOptionPane.showMessageDialog(detailsPanel, "Ce livre n'est pas disponible.", "Erreur", JOptionPane.ERROR_MESSAGE);
@@ -251,10 +263,9 @@ public class LivreView extends JPanel {
             }
         });
         detailsPanel.add(borrowButton);
-
+        
         // Définir une taille fixe pour le panneau de détails
         detailsPanel.setPreferredSize(new Dimension(300, 400)); // Ajustez la taille selon vos besoins
-
         detailsPanel.revalidate(); // Revalider le panneau pour afficher les nouveaux détails
         detailsPanel.repaint(); // Repeindre le panneau
     }
@@ -383,145 +394,146 @@ public class LivreView extends JPanel {
         }
     }
 
-private void updateLivreForm(Livre livre) {
-    JDialog updateDialog = new JDialog((Frame) null, "Modifier le Livre", true);
-    updateDialog.setLayout(new GridBagLayout());
-    GridBagConstraints gbc = new GridBagConstraints();
-
-    gbc.fill = GridBagConstraints.HORIZONTAL;
-    gbc.insets = new Insets(5, 5, 5, 5);
-
-    titreField = new JTextField(livre.getTitre());
-    auteurField = new JTextField(livre.getAuteur());
-    anneeField = new JTextField(String.valueOf(livre.getAnneePublication()));
-    genreComboBox = new JComboBox<>(new String[]{"Science Fiction", "Histoire", "Roman", "Aventure"});
-    genreComboBox.setSelectedItem(livre.getGenre());
-    imageUrlField = new JTextField(livre.getImageUrl());
-    imageUrlField.setEditable(false); // Rendre le champ non modifiable
-    imageUrlField.setBackground(Color.LIGHT_GRAY); // Changer la couleur de fond pour indiquer qu'il est non modifiable
-    isbnField = new JTextField(livre.getIsbn());
-    descriptionField = new JTextField(livre.getDescription());
-    editeurField = new JTextField(livre.getEditeur());
-    exemplairesField = new JTextField(String.valueOf(livre.getTotalExemplaires()));
-
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    updateDialog.add(new JLabel("Titre :"), gbc);
-    gbc.gridx = 1;
-    updateDialog.add(titreField, gbc);
-
-    gbc.gridx = 0;
-    gbc.gridy = 1;
-    updateDialog.add(new JLabel("Auteur :"), gbc);
-    gbc.gridx = 1;
-    updateDialog.add(auteurField, gbc);
-
-    gbc.gridx = 0;
-    gbc.gridy = 2;
-    updateDialog.add(new JLabel("Année de publication :"), gbc);
-    gbc.gridx = 1;
-    updateDialog.add(anneeField, gbc);
-
-    gbc.gridx = 0;
-    gbc.gridy = 3;
-    updateDialog.add(new JLabel("Genre :"), gbc);
-    gbc.gridx = 1;
-    updateDialog.add(genreComboBox, gbc);
-
-    gbc.gridx = 0;
-    gbc.gridy = 4;
-    updateDialog.add(new JLabel("URL de l'image :"), gbc);
-    gbc.gridx = 1;
-    updateDialog.add(imageUrlField, gbc);
-
-    gbc.gridx = 0;
-    gbc.gridy = 5;
-    updateDialog.add(new JLabel("ISBN :"), gbc);
-    gbc.gridx = 1;
-    updateDialog.add(isbnField, gbc);
-
-    gbc.gridx = 0;
-    gbc.gridy = 6;
-    updateDialog.add(new JLabel("Description :"), gbc);
-    gbc.gridx = 1;
-    updateDialog.add(descriptionField, gbc);
-
-    gbc.gridx = 0;
-    gbc.gridy = 7;
-    updateDialog.add(new JLabel("Éditeur :"), gbc);
-    gbc.gridx = 1;
-    updateDialog.add(editeurField, gbc);
-
-    gbc.gridx = 0;
-    gbc.gridy = 8;
-    updateDialog.add(new JLabel("Nombre d'exemplaires :"), gbc);
-    gbc.gridx = 1;
-    updateDialog.add(exemplairesField, gbc);
-
-    JButton updateButton = new JButton("Mettre à jour");
-    updateButton.addActionListener(e -> {
-        try {
-            // Vérification de l'URL de l'image
-            if (!isValidImageUrl(imageUrlField.getText())) {
-                throw new IllegalArgumentException("L'URL de l'image n'est pas valide.");
-            }
-            updateLivre(livre, updateDialog);
-        } catch (Exception ex) {
-            livreController.showMessage(ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-        }
-    });
-    gbc.gridx = 0;
-    gbc.gridy = 9;
-    gbc.gridwidth = 2;
-    updateDialog.add(updateButton, gbc);
-
-    updateDialog.setSize(400, 500);
-    updateDialog.setLocationRelativeTo(this);
-    updateDialog.setVisible(true);
-}
-
-private void updateLivre(Livre livre, JDialog dialog) {
-    try {
-        String titre = titreField.getText();
-        String auteur = auteurField.getText();
-        int annee = Integer.parseInt(anneeField.getText());
-        String genre = (String) genreComboBox.getSelectedItem();
-        String imageUrl = imageUrlField.getText();
-        String isbn = isbnField.getText();
-        String description = descriptionField.getText();
-        String editeur = editeurField.getText();
-        int totalExemplaires = Integer.parseInt(exemplairesField.getText());
-
-        livre.setTitre(titre);
-        livre.setAuteur(auteur);
-        livre.setAnneePublication(annee);
-        livre.setGenre(genre);
-        livre.setImageUrl(imageUrl);
-        livre.setIsbn(isbn);
-        livre.setDescription(description);
-        livre.setEditeur(editeur);
-        livre.setTotalExemplaires(totalExemplaires);
-
-        livreController.updateLivre(livre);
-        dialog.dispose();
-        
-        // Appel à showLivreDetails pour mettre à jour l'affichage
-        showLivreDetails(livre); // Passer le livre modifié pour afficher les nouvelles valeurs
-        livreController.showMessage("Livre mis à jour avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
-    } catch (NumberFormatException e) {
-        livreController.showMessage("Veuillez entrer une année et un nombre d'exemplaires valides.", "Erreur", JOptionPane.ERROR_MESSAGE);
-    } catch (Exception e) {
-        livreController.showMessage("Erreur dans les champs de saisie.", "Erreur", JOptionPane.ERROR_MESSAGE);
-    }
-}
-// Méthode pour vérifier si l'URL de l'image est valide
+	private void updateLivreForm(Livre livre) {
+	    JDialog updateDialog = new JDialog((Frame) null, "Modifier le Livre", true);
+	    updateDialog.setLayout(new GridBagLayout());
+	    GridBagConstraints gbc = new GridBagConstraints();
+	
+	    gbc.fill = GridBagConstraints.HORIZONTAL;
+	    gbc.insets = new Insets(5, 5, 5, 5);
+	
+	    titreField = new JTextField(livre.getTitre());
+	    auteurField = new JTextField(livre.getAuteur());
+	    anneeField = new JTextField(String.valueOf(livre.getAnneePublication()));
+	    genreComboBox = new JComboBox<>(new String[]{"Science Fiction", "Histoire", "Roman", "Aventure"});
+	    genreComboBox.setSelectedItem(livre.getGenre());
+	    imageUrlField = new JTextField(livre.getImageUrl());
+	    imageUrlField.setEditable(false); // Rendre le champ non modifiable
+	    imageUrlField.setBackground(Color.LIGHT_GRAY); // Changer la couleur de fond pour indiquer qu'il est non modifiable
+	    isbnField = new JTextField(livre.getIsbn());
+	    descriptionField = new JTextField(livre.getDescription());
+	    editeurField = new JTextField(livre.getEditeur());
+	    exemplairesField = new JTextField(String.valueOf(livre.getTotalExemplaires()));
+	
+	    gbc.gridx = 0;
+	    gbc.gridy = 0;
+	    updateDialog.add(new JLabel("Titre :"), gbc);
+	    gbc.gridx = 1;
+	    updateDialog.add(titreField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy = 1;
+	    updateDialog.add(new JLabel("Auteur :"), gbc);
+	    gbc.gridx = 1;
+	    updateDialog.add(auteurField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy = 2;
+	    updateDialog.add(new JLabel("Année de publication :"), gbc);
+	    gbc.gridx = 1;
+	    updateDialog.add(anneeField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy = 3;
+	    updateDialog.add(new JLabel("Genre :"), gbc);
+	    gbc.gridx = 1;
+	    updateDialog.add(genreComboBox, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy = 4;
+	    updateDialog.add(new JLabel("URL de l'image :"), gbc);
+	    gbc.gridx = 1;
+	    updateDialog.add(imageUrlField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy = 5;
+	    updateDialog.add(new JLabel("ISBN :"), gbc);
+	    gbc.gridx = 1;
+	    updateDialog.add(isbnField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy = 6;
+	    updateDialog.add(new JLabel("Description :"), gbc);
+	    gbc.gridx = 1;
+	    updateDialog.add(descriptionField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy = 7;
+	    updateDialog.add(new JLabel("Éditeur :"), gbc);
+	    gbc.gridx = 1;
+	    updateDialog.add(editeurField, gbc);
+	
+	    gbc.gridx = 0;
+	    gbc.gridy = 8;
+	    updateDialog.add(new JLabel("Nombre d'exemplaires :"), gbc);
+	    gbc.gridx = 1;
+	    updateDialog.add(exemplairesField, gbc);
+	
+	    JButton updateButton = new JButton("Mettre à jour");
+	    updateButton.addActionListener(e -> {
+	        try {
+	            // Vérification de l'URL de l'image
+	            if (!isValidImageUrl(imageUrlField.getText())) {
+	                throw new IllegalArgumentException("L'URL de l'image n'est pas valide.");
+	            }
+	            updateLivre(livre, updateDialog);
+	        } catch (Exception ex) {
+	            livreController.showMessage(ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+	        }
+	    });
+	    gbc.gridx = 0;
+	    gbc.gridy = 9;
+	    gbc.gridwidth = 2;
+	    updateDialog.add(updateButton, gbc);
+	
+	    updateDialog.setSize(400, 500);
+	    updateDialog.setLocationRelativeTo(this);
+	    updateDialog.setVisible(true);
+	}
+	
+	private void updateLivre(Livre livre, JDialog dialog) {
+	    try {
+	        String titre = titreField.getText();
+	        String auteur = auteurField.getText();
+	        int annee = Integer.parseInt(anneeField.getText());
+	        String genre = (String) genreComboBox.getSelectedItem();
+	        String imageUrl = imageUrlField.getText();
+	        String isbn = isbnField.getText();
+	        String description = descriptionField.getText();
+	        String editeur = editeurField.getText();
+	        int totalExemplaires = Integer.parseInt(exemplairesField.getText());
+	
+	        livre.setTitre(titre);
+	        livre.setAuteur(auteur);
+	        livre.setAnneePublication(annee);
+	        livre.setGenre(genre);
+	        livre.setImageUrl(imageUrl);
+	        livre.setIsbn(isbn);
+	        livre.setDescription(description);
+	        livre.setEditeur(editeur);
+	        livre.setTotalExemplaires(totalExemplaires);
+	
+	        livreController.updateLivre(livre);
+	        dialog.dispose();
+	        
+	        // Appel à showLivreDetails pour mettre à jour l'affichage
+	        showLivreDetails(livre); // Passer le livre modifié pour afficher les nouvelles valeurs
+	        livreController.showMessage("Livre mis à jour avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
+	    } catch (NumberFormatException e) {
+	        livreController.showMessage("Veuillez entrer une année et un nombre d'exemplaires valides.", "Erreur", JOptionPane.ERROR_MESSAGE);
+	    } catch (Exception e) {
+	        livreController.showMessage("Erreur dans les champs de saisie.", "Erreur", JOptionPane.ERROR_MESSAGE);
+	    }
+	}
+	// Méthode pour vérifier si l'URL de l'image est valide
+	
 private boolean isValidImageUrl(String url) {
-    try {
-        ImageIcon imageIcon = new ImageIcon(url);
-        return imageIcon.getIconWidth() != -1; // Vérifie si l'image est valide
-    } catch (Exception e) {
-        return false; // Si une exception est levée, l'URL n'est pas valide
-    }
-}
-  
+	    try {
+	        ImageIcon imageIcon = new ImageIcon(url);
+	        return imageIcon.getIconWidth() != -1; // Vérifie si l'image est valide
+	    } catch (Exception e) {
+	        return false; // Si une exception est levée, l'URL n'est pas valide
+	    }
+	}
+ 
 }

@@ -8,7 +8,11 @@ import java.awt.*;
 import java.util.List;
 
 public class VisitorView extends JFrame {
-    private LivreController livreController;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private LivreController livreController;
 
     public VisitorView(BibliothequeApp app) { // Accepter une instance de BibliothequeApp
         livreController = new LivreController("C:/Eclipse/gestionbibli/src/main/resources/ressources/books.csv");

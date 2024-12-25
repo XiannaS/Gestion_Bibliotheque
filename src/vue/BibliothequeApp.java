@@ -7,17 +7,19 @@ import controllers.UserController;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.intellijthemes.FlatDraculaIJTheme;
 
 public class BibliothequeApp extends JFrame {
-    private JTabbedPane tabbedPane;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JTabbedPane tabbedPane;
     private JButton toggleThemeButton;
     private JButton profileButton;
     private JButton notificationButton;
     private JLabel welcomeLabel;
-    private boolean isDracula = false; // Suivi du thème actuel
     private boolean isDarkMode = true;
 
     public BibliothequeApp() {
@@ -62,7 +64,11 @@ public class BibliothequeApp extends JFrame {
 
         // Onglet pour gérer les livres
         if (livreController != null) {
-            LivreView livreView = new LivreView(livreController);
+        	// Créer une instance de EmpruntView
+        	EmpruntView empruntView = new EmpruntView(empruntController);
+
+        	// Créer une instance de LivreView en passant empruntView
+        	LivreView livreView = new LivreView(livreController, empruntView);
             tabbedPane.addTab("Livres", livreView);
         }
 
@@ -74,7 +80,10 @@ public class BibliothequeApp extends JFrame {
 
         // Onglet pour gérer les emprunts
         if (empruntController != null) {
-            EmpruntView empruntView = new EmpruntView(empruntController);
+        	// Créer une instance de EmpruntView
+        	EmpruntView empruntView = new EmpruntView(empruntController);
+
+        	new LivreView(livreController, empruntView);
             tabbedPane.addTab("Emprunts", empruntView);
         }
 

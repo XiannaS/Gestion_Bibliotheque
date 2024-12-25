@@ -15,14 +15,11 @@ public class EmpruntController {
     private EmpruntDAO empruntModel;
     private UserDAO userDAO;
 	private LivreDAO livreDAO;
-	private List<Emprunt> emprunts;
-    // Constructeur
-	 
-    public EmpruntController(String csvFileEmprunts, String csvFileLivres, String csvFileUsers) {
+	public EmpruntController(String csvFileEmprunts, String csvFileLivres, String csvFileUsers) {
         this.empruntModel = new EmpruntDAO(csvFileEmprunts);
         this.livreDAO = new LivreDAO(csvFileLivres);
         this.userDAO = new UserDAO(csvFileUsers);
-        this.emprunts = new ArrayList<>();
+        new ArrayList<>();
     }
 
  
@@ -58,8 +55,10 @@ public class EmpruntController {
         empruntModel.ajouterEmprunt(emprunt);
         
         // Mettre à jour la disponibilité du livre
+        
         livre.emprunter(); // Décrémenter le nombre d'exemplaires disponibles
         livreDAO.updateLivre(livre); // Mettre à jour le livre dans le modèle
+         
         JOptionPane.showMessageDialog(null, "Livre emprunté avec succès.");
     }
     
@@ -179,12 +178,16 @@ public class EmpruntController {
             case "Par pénalités":
                 emprunts = getEmpruntsTriesParPenalite();
                 break;
-            default:
+            case "Tous": // Ajoutez ce cas pour gérer "Tous"
                 emprunts = listerEmprunts();
+                break;
+            default:
+                emprunts = listerEmprunts(); // Par défaut, lister tous les emprunts
         }
 
         return emprunts;
     }
+    
     public void supprimerTousLesEmprunts() {
         try {
             empruntModel.supprimerTousLesEmprunts(); // Méthode à implémenter dans EmpruntDAO
@@ -197,4 +200,5 @@ public class EmpruntController {
     public Emprunt getEmpruntById(int empruntId) {
         return empruntModel.getEmpruntById(empruntId);
     }
+ 
 }

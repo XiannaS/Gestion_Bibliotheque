@@ -11,7 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserView extends JPanel {
-    private JTextField nomField, prenomField, emailField, numeroTelField;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JTextField nomField, prenomField, emailField, numeroTelField;
     private JComboBox<Role> roleComboBox;
     private JCheckBox statutCheckBox;
     private JTable userTable;

@@ -13,12 +13,15 @@ import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DashboardView extends JPanel {
-    private LivreController livreController;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private LivreController livreController;
     private UserController userController;
     private EmpruntController empruntController;
 
