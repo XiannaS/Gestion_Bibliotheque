@@ -8,86 +8,68 @@ import java.awt.event.ActionListener;
 public class LoginView extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private JButton loginButton;
-    private JButton cancelButton;
 
     public LoginView(BibliothequeApp app) {
         setTitle("Connexion");
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centrer la fenêtre
+        setLocationRelativeTo(null);
+        setLayout(new GridBagLayout());
 
-        // Créer le panneau principal
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
-
-        // Ajouter les composants
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        panel.add(new JLabel("Nom d'utilisateur :"), gbc);
-
-        gbc.gridx = 1;
+        // Créer les composants
+        JLabel usernameLabel = new JLabel("Nom d'utilisateur :");
         usernameField = new JTextField(15);
-        panel.add(usernameField, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        panel.add(new JLabel("Mot de passe :"), gbc);
-
-        gbc.gridx = 1;
+        JLabel passwordLabel = new JLabel("Mot de passe :");
         passwordField = new JPasswordField(15);
-        panel.add(passwordField, gbc);
+        JButton loginButton = new JButton("Se connecter");
+        JButton guestButton = new JButton("Accès Visiteur");
 
-        // Bouton de connexion
-        loginButton = new JButton("Se connecter");
+        // Ajouter des écouteurs d'événements
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Logique de connexion ici
                 String username = usernameField.getText();
                 String password = new String(passwordField.getPassword());
-                
-                // Remplacez cette logique par votre propre méthode de vérification
+                // Vérifiez les informations d'identification
                 if (authenticate(username, password)) {
-                    app.setVisible(true); // Afficher la fenêtre principale
+                    app.setVisible(true); // Afficher l'application principale
                     dispose(); // Fermer la fenêtre de connexion
                 } else {
                     JOptionPane.showMessageDialog(LoginView.this, "Nom d'utilisateur ou mot de passe incorrect.", "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
+
+        guestButton.addActionListener(e -> {
+            // Ouvrir la vue des livres pour les visiteurs
+            new VisitorView(app).setVisible(true);
+            dispose(); // Fermer la fenêtre de connexion
+        });
+
+        // Ajouter les composants à la fenêtre
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(usernameLabel, gbc);
+        gbc.gridx = 1;
+        add(usernameField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(passwordLabel, gbc);
+        gbc.gridx = 1;
+        add(passwordField, gbc);
         gbc.gridx = 0;
         gbc.gridy = 2;
-        panel.add(loginButton, gbc);
-
-        // Bouton d'annulation
-        cancelButton = new JButton("Annuler");
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0); // Fermer l'application
-            }
-        });
+        add(loginButton, gbc);
         gbc.gridx = 1;
-        panel.add(cancelButton, gbc);
-
-        // Ajouter le panneau à la fenêtre
-        add(panel);
+        add(guestButton, gbc);
     }
 
-    // Méthode d'authentification (à remplacer par votre logique)
     private boolean authenticate(String username, String password) {
-        // Remplacez cette logique par votre propre méthode de vérification
+        // Remplacez cette logique par votre propre logique d'authentification
+        // Par exemple, vérifiez les informations d'identification dans un fichier ou une base de données
         return "admin".equals(username) && "password".equals(password); // Exemple simple
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            LoginView loginView = new LoginView(new BibliothequeApp());
-            loginView.setVisible(true);
-        });
     }
 }

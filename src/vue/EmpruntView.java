@@ -14,7 +14,6 @@ public class EmpruntView extends JPanel {
     private JTable empruntTable;
     private DefaultTableModel tableModel;
     private EmpruntController empruntController;
-
     private JButton emprunterButton;
     private JButton retournerButton;
     private JButton supprimerButton;
@@ -25,60 +24,61 @@ public class EmpruntView extends JPanel {
     private JButton searchButton; // Bouton de recherche
     private JComboBox<String> searchTypeComboBox; // Menu déroulant pour le type de recherche
 
-    public EmpruntView(EmpruntController empruntController) {
-        this.empruntController = empruntController;
-        setLayout(new BorderLayout());
+public EmpruntView(EmpruntController empruntController) {
+    this.empruntController = empruntController;
+    setLayout(new BorderLayout()); 
+ 
+    // Table des emprunts
+    tableModel = new DefaultTableModel(new String[]{"ID", "Livre", "Utilisateur", "Date Emprunt", "Date Retour Prévue", "Retour Effective", "Rendu", "Pénalité"}, 0);
+    empruntTable = new JTable(tableModel);
+    add(new JScrollPane(empruntTable), BorderLayout.CENTER);
 
-        // Table des emprunts
-        tableModel = new DefaultTableModel(new String[]{"ID", "Livre", "Utilisateur", "Date Emprunt", "Date Retour Prévue", "Retour Effective", "Rendu", "Pénalité"}, 0);
-        empruntTable = new JTable(tableModel);
-        add(new JScrollPane(empruntTable), BorderLayout.CENTER);
+    // Panneau des actions
+    actionPanel = new JPanel(new BorderLayout());
 
-        // Panneau des actions
-        actionPanel = new JPanel(new BorderLayout());
+    // Panneau de recherche
+    JPanel searchPanel = new JPanel();
+    searchField = new JTextField(15);
+    searchButton = new JButton("Rechercher");
 
-        // Panneau de recherche
-        JPanel searchPanel = new JPanel();
-        searchField = new JTextField(15);
-        searchButton = new JButton("Rechercher");
+    // Menu déroulant pour le type de recherche
+    String[] searchTypes = {"ID Emprunt", "ID Livre", "ID Utilisateur", "Date"};
+    searchTypeComboBox = new JComboBox<>(searchTypes);
+    
+    searchPanel.add(new JLabel("Recherche :"));
+    searchPanel.add(searchField);
+    searchPanel.add(searchTypeComboBox);
+    searchPanel.add(searchButton);
+    actionPanel.add(searchPanel, BorderLayout.NORTH);
+ 
+    // Panneau des boutons
+    JPanel buttonPanel = new JPanel();
+    emprunterButton = new JButton("Emprunter Livre");
+    retournerButton = new JButton("Retourner Livre");
+    supprimerButton = new JButton("Supprimer Emprunt");
+    renouvelerButton = new JButton("Prolonger Emprunt");
 
-        // Menu déroulant pour le type de recherche
-        String[] searchTypes = {"ID Emprunt", "ID Livre", "ID Utilisateur", "Date"};
-        searchTypeComboBox = new JComboBox<>(searchTypes);
-        
-        searchPanel.add(new JLabel("Recherche :"));
-        searchPanel.add(searchField);
-        searchPanel.add(searchTypeComboBox); // Ajout du menu déroulant
-        searchPanel.add(searchButton);
-        actionPanel.add(searchPanel, BorderLayout.NORTH); // Ajout en haut du panneau d'actions
+    buttonPanel.add(emprunterButton);
+    buttonPanel.add(retournerButton);
+    buttonPanel.add(supprimerButton);
+    buttonPanel.add(renouvelerButton);
 
-        // Panneau des boutons
-        JPanel buttonPanel = new JPanel();
-        emprunterButton = new JButton("Emprunter Livre");
-        retournerButton = new JButton("Retourner Livre");
-        supprimerButton = new JButton("Supprimer Emprunt");
-        renouvelerButton = new JButton("Renouveler Emprunt");
-        buttonPanel.add(emprunterButton);
-        buttonPanel.add(retournerButton);
-        buttonPanel.add(supprimerButton);
-        buttonPanel.add(renouvelerButton);
+    // Panneau de tri
+    JPanel triPanel = new JPanel();
+    triPanel.add(new JLabel("Trier par :"));
+    triComboBox = new JComboBox<>(new String[]{"Tous", "En cours", "Historique", "Par pénalités"});
+    triPanel.add(triComboBox);
 
-        // Panneau de tri
-        JPanel triPanel = new JPanel();
-        triPanel.add(new JLabel("Trier par :"));
-        triComboBox = new JComboBox<>(new String[]{"Tous", "En cours", "Historique", "Par pénalités"});
-        triPanel.add(triComboBox);
+    actionPanel.add(buttonPanel, BorderLayout.CENTER);
+    actionPanel.add(triPanel, BorderLayout.SOUTH); // Ajout en bas du panneau d'actions
+    add(actionPanel, BorderLayout.SOUTH);
 
-        actionPanel.add(buttonPanel, BorderLayout.CENTER);
-        actionPanel.add(triPanel, BorderLayout.SOUTH); // Ajout en bas du panneau d'actions
-        add(actionPanel, BorderLayout.SOUTH);
+    // Charger les emprunts existants
+    chargerEmprunts("Tous");
 
-        // Charger les emprunts existants
-        chargerEmprunts("Tous");
-
-        // Configurer les actions des boutons
-        setupListeners();
-    }
+    // Configurer les actions des boutons
+    setupListeners();
+}
 
 private void setupListeners() {
     // Écouteur pour le bouton de recherche
@@ -109,10 +109,16 @@ private void setupListeners() {
                     emprunt.isRendu() ? "Oui" : "Non",
                     emprunt.getPenalite()
                 });
-            }
+ }
         } else {
-            chargerEmprunts("Tous"); // Recharger tous les emprunts si le champ est vide
+            chargerEmprunts((String) triComboBox.getSelectedItem()); // Recharger selon le type de tri sélectionné
         }
+    });
+
+    // Écouteur pour le JComboBox de tri
+    triComboBox.addActionListener(e -> {
+        String selectedOption = (String) triComboBox.getSelectedItem();
+        chargerEmprunts(selectedOption); // Charger les emprunts selon l'option sélectionnée
     });
 
     // Écouteur pour le bouton "Emprunter Livre"
@@ -139,8 +145,9 @@ private void setupListeners() {
                 User user = empruntController.getUserById(userId); // Assurez-vous que userId est de type String
 
                 if (livre != null && user != null) {
-                    empruntController.emprunterLivre(livre, user);
-                    chargerEmprunts("Tous"); // Recharger les emprunts après emprunt
+                
+					empruntController.emprunterLivre(livre, user);
+                    chargerEmprunts((String) triComboBox.getSelectedItem()); // Recharger les emprunts après emprunt
                 } else {
                     JOptionPane.showMessageDialog(this, "Livre ou utilisateur non trouvé.", "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
@@ -156,25 +163,30 @@ private void setupListeners() {
         if (selectedRow != -1) {
             int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0); // Assurez-vous que c'est un Integer
             empruntController.retournerLivre(idEmprunt);
-            chargerEmprunts("Tous"); // Recharger les emprunts après retour
+            chargerEmprunts((String) triComboBox.getSelectedItem()); // Recharger les emprunts après retour
         } else {
             JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à retourner.", "Erreur", JOptionPane.ERROR_MESSAGE);
         }
     });
 
- 
-    // Écouteur pour le bouton "Renouveler Emprunt"
+    // Écouteur pour le bouton "Prolonger Emprunt"
     renouvelerButton.addActionListener(e -> {
         int selectedRow = empruntTable.getSelectedRow();
         if (selectedRow != -1) {
             int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0); // Assurez-vous que c'est un Integer
-            empruntController.renouvelerEmprunt(idEmprunt);
-            chargerEmprunts("Tous"); // Recharger les emprunts après renouvellement
+            Emprunt emprunt = empruntController.getEmpruntById(idEmprunt);
+            if (emprunt != null && !emprunt.isRendu() && emprunt.getPenalite() == 0) {
+                empruntController.renouvelerEmprunt(idEmprunt);
+                chargerEmprunts((String) triComboBox.getSelectedItem()); // Recharger les emprunts après renouvellement
+            } else {
+                JOptionPane.showMessageDialog(this, "L'emprunt ne peut pas être prolongé.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
         } else {
-            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à renouveler.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à prolonger.", "Erreur", JOptionPane.ERROR_MESSAGE);
         }
     });
 }
+
 public void chargerEmprunts(String triOption) {
     List<Emprunt> emprunts = empruntController.chargerEmprunts(triOption); // Appel à la méthode du contrôleur
     tableModel.setRowCount(0); // Vider le tableau

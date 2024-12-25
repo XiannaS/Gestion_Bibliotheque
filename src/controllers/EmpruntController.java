@@ -52,17 +52,16 @@ public class EmpruntController {
         LocalDate dateRetourPrevue = LocalDate.now().plusDays(14);
         
         // Créer l'emprunt avec tous les paramètres nécessaires
-        Emprunt emprunt = new Emprunt(0, livre.getId(), user.getId(), LocalDate.now(), dateRetourPrevue, null, false,0);
+        Emprunt emprunt = new Emprunt(0, livre.getId(), user.getId(), LocalDate.now(), dateRetourPrevue, null, false, 0);
         
         // Ajouter l'emprunt au modèle
         empruntModel.ajouterEmprunt(emprunt);
         
         // Mettre à jour la disponibilité du livre
-        livre.emprunter(); // Réduire le nombre d'exemplaires disponibles
+        livre.emprunter(); // Décrémenter le nombre d'exemplaires disponibles
         livreDAO.updateLivre(livre); // Mettre à jour le livre dans le modèle
         JOptionPane.showMessageDialog(null, "Livre emprunté avec succès.");
     }
-    
     
     public void retournerLivre(int empruntId) {
         Emprunt emprunt = empruntModel.getEmpruntById(empruntId);
@@ -185,5 +184,17 @@ public class EmpruntController {
         }
 
         return emprunts;
+    }
+    public void supprimerTousLesEmprunts() {
+        try {
+            empruntModel.supprimerTousLesEmprunts(); // Méthode à implémenter dans EmpruntDAO
+            JOptionPane.showMessageDialog(null, "Tous les emprunts ont été supprimés avec succès.");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erreur lors de la suppression des emprunts : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public Emprunt getEmpruntById(int empruntId) {
+        return empruntModel.getEmpruntById(empruntId);
     }
 }

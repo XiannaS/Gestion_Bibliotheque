@@ -103,4 +103,14 @@ public class EmpruntDAO {
         }
         throw new IllegalArgumentException("Emprunt non trouvé ou déjà retourné.");
     }
+
+    public void supprimerTousLesEmprunts() throws IOException {
+        // Vider la liste des emprunts
+        emprunts.clear();
+        nextId = 1; // Réinitialiser l'ID pour le prochain emprunt
+
+        // Sauvegarder les modifications dans le fichier CSV
+        sauvegarderCSV();
+    }
+
 }

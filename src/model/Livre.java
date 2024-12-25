@@ -57,18 +57,25 @@ public class Livre {
         return exemplairesDisponibles;
     }
 
+    public int getTotalExemplaires() {
+        return totalExemplaires; // Retourne le nombre total d'exemplaires
+    }
+    
+    public void setTotalExemplaires(int totalExemplaires) {
+        this.totalExemplaires = totalExemplaires;
+    }
+    
     public void emprunter() {
         if (exemplairesDisponibles > 0) {
-            exemplairesDisponibles--;
+            exemplairesDisponibles--; // Décrémenter uniquement les exemplaires disponibles
         }
     }
 
     public void retourner() {
         if (exemplairesDisponibles < totalExemplaires) {
-            exemplairesDisponibles++;
+            exemplairesDisponibles++; // Incrémenter uniquement les exemplaires disponibles
         }
     }
- 
 
     public boolean isDisponible() {
         return exemplairesDisponibles > 0; // Un livre est disponible s'il y a des exemplaires disponibles
@@ -123,7 +130,9 @@ public class Livre {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
+    public void setExemplairesDisponibles(int exemplairesDisponibles) {
+        this.exemplairesDisponibles = exemplairesDisponibles;
+    }
     @Override
     public String toString() {
         return id + ";" + titre + ";" + auteur + ";" + genre + ";" + anneePublication + ";" + imageUrl + ";" + 

@@ -67,7 +67,7 @@ public class LivreController {
                     return new ArrayList<>();
                 }
                 break;
-            default:
+            default: 
                 System.out.println("Critère de recherche invalide. Veuillez choisir parmi : titre, auteur, annee.");
                 return new ArrayList<>();
         }

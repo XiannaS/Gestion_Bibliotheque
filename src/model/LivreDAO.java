@@ -64,9 +64,9 @@ public class LivreDAO {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
             for (Livre l : livres) {
                 if (l.getId() == livre.getId()) {
-                    bw.write(livre.toString() + ";" + livre.isDisponible());
+                    bw.write(livre.toString() + ";" + livre.getExemplairesDisponibles());
                 } else {
-                    bw.write(l.toString() + ";" + l.isDisponible());
+                    bw.write(l.toString() + ";" + l.getExemplairesDisponibles());
                 }
                 bw.newLine();
             }

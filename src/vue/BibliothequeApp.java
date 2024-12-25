@@ -36,7 +36,7 @@ public class BibliothequeApp extends JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des livres : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
-
+ 
         try {
             userController = new UserController("C:/Eclipse/gestionbibli/src/main/resources/ressources/users.csv");
         } catch (Exception e) {
@@ -83,19 +83,28 @@ public class BibliothequeApp extends JFrame {
         headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));  // Alignement à droite pour les icônes
 
         // Icône de notification
-        notificationButton = new JButton(new ImageIcon("/src/resources/ressources/notification.png"));
+        ImageIcon notificationIcon = new ImageIcon(new ImageIcon("C:/Eclipse/gestionbibli/src/main/resources/ressources/notification.png")
+                .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
+        notificationButton = new JButton(notificationIcon);
         notificationButton.setToolTipText("Notifications");
+        notificationButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
         headerPanel.add(notificationButton);
 
         // Icône de profil
-        profileButton = new JButton(new ImageIcon("/src/resources/ressources/profile.png"));
+        ImageIcon profileIcon = new ImageIcon(new ImageIcon("C:/Eclipse/gestionbibli/src/main/resources/ressources/profile.png")
+                .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
+        profileButton = new JButton(profileIcon);
         profileButton.setToolTipText("Profil");
+        profileButton.setPreferredSize(new Dimension(30, 30)); // Ajust ez la taille du bouton si nécessaire
         profileButton.addActionListener(this::onProfileClicked);
         headerPanel.add(profileButton);
 
         // Icône de bascule de thème
-        toggleThemeButton = new JButton(new ImageIcon("/src/resources/ressources/mode.png"));
+        ImageIcon toggleThemeIcon = new ImageIcon(new ImageIcon("C:/Eclipse/gestionbibli/src/main/resources/ressources/mode.png")
+                .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
+        toggleThemeButton = new JButton(toggleThemeIcon);
         toggleThemeButton.setToolTipText("Basculer le thème");
+        toggleThemeButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
         toggleThemeButton.addActionListener(this::toggleTheme);
         headerPanel.add(toggleThemeButton);
 
@@ -152,3 +161,17 @@ public class BibliothequeApp extends JFrame {
         });
     }
 }
+// main pour login
+//public static void main(String[] args) {
+  //  SwingUtilities.invokeLater(() -> {
+    //    try {
+      //      UIManager.setLookAndFeel(new FlatLightLaf()); // Appliquer le thème par défaut
+
+            // Créer et afficher la fenêtre de connexion
+        //    LoginView loginView = new LoginView(new BibliothequeApp());
+          //  loginView.setVisible(true);
+        //} catch (UnsupportedLookAndFeelException e) {
+//    e.printStackTrace();
+            //  }
+// });
+//}
