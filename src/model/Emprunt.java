@@ -101,4 +101,8 @@ public class Emprunt {
     public void setDateRetourPrevue(LocalDate dateRetourPrevue) {
         this.dateRetourPrevue = dateRetourPrevue;
     }
+	public void setPenalite(int penalite) {
+		   this.penalite = penalite;
+		
+	}
 }

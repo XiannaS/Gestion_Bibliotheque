@@ -2,6 +2,7 @@ package controllers;
 
 import model.Emprunt;
 import model.EmpruntDAO;
+import model.EmpruntObserver;
 import model.Livre;
 import model.LivreDAO;
 import model.User;
@@ -24,7 +25,7 @@ public class EmpruntController {
     private UserDAO userDAO;
     private LivreDAO livreDAO;
     private static final Logger LOGGER = Logger.getLogger(EmpruntController.class.getName());
-
+    private List<EmpruntObserver> observers = new ArrayList<>();
     /**
      * Constructeur pour initialiser les DAOs pour les emprunts, les utilisateurs et les livres.
      *
@@ -37,8 +38,19 @@ public class EmpruntController {
         this.livreDAO = new LivreDAO(csvFileLivres);
         this.userDAO = new UserDAO(csvFileUsers);
         new ArrayList<>();
+        
     }
-
+    
+    // Méthode pour ajouter un observateur
+    public void addObserver(EmpruntObserver observer) {
+        observers.add(observer);
+    }
+    // Méthode pour notifier tous les observateurs
+    private void notifyObservers() {
+        for (EmpruntObserver observer : observers) {
+            observer.onEmpruntChanged();
+        }
+    }
     /**
      * Récupère une entité (Livre ou User) par son ID.
      *
@@ -79,9 +91,16 @@ public class EmpruntController {
             JOptionPane.showMessageDialog(null, "L'utilisateur n'est pas actif.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        // Vérifier si l'utilisateur a déjà emprunté ce livre
+        // Vérifier les pénalités
         List<Emprunt> empruntsEnCours = getEmpruntsEnCours();
+        for (Emprunt emprunt : empruntsEnCours) {
+            if (emprunt.getUserId().equals(user.getId()) && emprunt.getPenalite() > 0) {
+                JOptionPane.showMessageDialog(null, "L'utilisateur a des pénalités. Emprunt impossible.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+        // Vérifier si l'utilisateur a déjà emprunté ce livre
+     
         for (Emprunt emprunt : empruntsEnCours) {
             if (emprunt.getLivreId() == livre.getId() && emprunt.getUserId().equals(user.getId())) {
                 JOptionPane.showMessageDialog(null, "L'utilisateur a déjà emprunté ce livre.", "Erreur", JOptionPane.ERROR_MESSAGE);
@@ -89,15 +108,15 @@ public class EmpruntController {
             }
         }
 
-        // Définir la date de retour prévue (par exemple, 14 jours après l'emprunt)
-        LocalDate dateRetourPrevue = LocalDate.now().plusDays(14);
+        // Définir la date de retour prévue exemple, 14 jours après l'emprunt
+        LocalDate dateRetourPrevue = LocalDate.now().plusDays(7);
 
         // Créer l'emprunt avec tous les paramètres nécessaires
         Emprunt emprunt = new Emprunt(0, livre.getId(), user.getId(), LocalDate.now(), dateRetourPrevue, null, false, 0);
 
         // Ajouter l'emprunt au modèle
         empruntModel.ajouterEmprunt(emprunt);
-
+        notifyObservers();
         // Mettre à jour la disponibilité du livre
         livre.emprunter(); // Décrémenter le nombre d'exemplaires disponibles
         livreDAO.updateLivre(livre); // Mettre à jour le livre dans le modèle
@@ -279,11 +298,16 @@ public class EmpruntController {
     public void renouvelerEmprunt(int empruntId) {
         try {
             Emprunt emprunt = empruntModel.getEmpruntById(empruntId);
-            if (emprunt == null || emprunt.isRendu()) {
-                throw new EmpruntException.EmpruntDejaRetourneException("Emprunt non trouvé ou déjà retourné.");
+            if (emprunt == null) {
+                throw new EmpruntException.EmpruntDejaRetourneException("Emprunt non trouvé.");
             }
 
-            // Contrôle des pénalités avant renouvellement
+            // Vérifier si l'emprunt a déjà été retourné
+            if (emprunt.isRendu()) {
+                throw new EmpruntException.EmpruntDejaRetourneException("L'emprunt a déjà été retourné.");
+            }
+
+            // Vérification des pénalités
             if (emprunt.getPenalite() > 0) {
                 throw new EmpruntException.PenaliteExistanteException("Il y a une pénalité. Renouvellement impossible.");
             }
@@ -296,11 +320,15 @@ public class EmpruntController {
             // Incrémenter le nombre de renouvellements
             emprunt.setNombreRenouvellements(emprunt.getNombreRenouvellements() + 1);
 
+            // Définir une nouvelle date de retour prévue (par exemple, 14 jours après le renouvellement)
+            LocalDate nouvelleDateRetourPrevue = emprunt.getDateRetourPrevue().plusDays(14);
+            emprunt.setDateRetourPrevue(nouvelleDateRetourPrevue);
+
             // Effectuer le renouvellement
-            empruntModel.renouvelerEmprunt(empruntId);
+            empruntModel.updateEmprunt(emprunt);
             JOptionPane.showMessageDialog(null, "Emprunt renouvelé avec succès.");
             LOGGER.info("Emprunt renouvelé : " + empruntId);
-        } catch (EmpruntException.PenaliteExistanteException | EmpruntException.EmpruntDejaRetourneException | EmpruntException.RenouvellementNonAutoriseException e) {
+        } catch (EmpruntException e) {
             LOGGER.warning(e.getMessage());
             JOptionPane.showMessageDialog(null, e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {

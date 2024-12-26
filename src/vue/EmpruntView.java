@@ -2,6 +2,7 @@ package vue;
 
 import controllers.EmpruntController;
 import model.Emprunt;
+import model.EmpruntObserver;
 import model.Livre;
 import model.User;
 
@@ -10,7 +11,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-public class EmpruntView extends JPanel {
+public class EmpruntView extends JPanel implements EmpruntObserver {
     private JTable empruntTable;
     private DefaultTableModel tableModel;
     private EmpruntController empruntController;
@@ -101,7 +102,10 @@ public class EmpruntView extends JPanel {
         // Configurer les actions des boutons
         setupListeners();
     }
-
+    @Override
+    public void onEmpruntChanged() {
+        chargerEmprunts("Tous"); // Recharger les emprunts
+    }
     private void styleButton(JButton button) {
         button.setBackground(new Color(60, 179, 113));  // Vert pour un look moderne
         button.setForeground(Color.WHITE);

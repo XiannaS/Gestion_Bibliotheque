@@ -61,7 +61,7 @@ public class Dashboard {
                 .collect(Collectors.toList());
     }
 
-    private List<User> getUtilisateursLesPlusActifs() {
+    private List<Object> getUtilisateursLesPlusActifs() {
         // Récupérer les emprunts et les regrouper par ID d'utilisateur
         return empruntController.listerEmprunts().stream()
                 // Regroupement par ID utilisateur avec comptage des emprunts

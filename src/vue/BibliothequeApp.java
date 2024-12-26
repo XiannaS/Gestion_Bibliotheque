@@ -66,6 +66,7 @@ public class BibliothequeApp extends JFrame {
         if (livreController != null) {
         	// Créer une instance de EmpruntView
         	EmpruntView empruntView = new EmpruntView(empruntController);
+        	empruntController.addObserver(empruntView);
 
         	// Créer une instance de LivreView en passant empruntView
         	LivreView livreView = new LivreView(livreController, empruntController, userController, empruntView);
