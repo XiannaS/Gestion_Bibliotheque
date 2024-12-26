@@ -19,187 +19,197 @@ public class EmpruntView extends JPanel {
     private JButton supprimerButton;
     private JButton renouvelerButton;
     private JComboBox<String> triComboBox;
-    private JPanel actionPanel; 
-    private JTextField searchField; // Champ de recherche
-    private JButton searchButton; // Bouton de recherche
-    private JComboBox<String> searchTypeComboBox; // Menu déroulant pour le type de recherche
+    private JPanel actionPanel;
+    private JTextField searchField;
+    private JButton searchButton;
+    private JComboBox<String> searchTypeComboBox;
 
-public EmpruntView(EmpruntController empruntController) {
-    this.empruntController = empruntController;
-    setLayout(new BorderLayout()); 
- 
-    // Table des emprunts
-    tableModel = new DefaultTableModel(new String[]{"ID", "Livre", "Utilisateur", "Date Emprunt", "Date Retour Prévue", "Retour Effective", "Rendu", "Pénalité"}, 0);
-    empruntTable = new JTable(tableModel);
-    add(new JScrollPane(empruntTable), BorderLayout.CENTER);
+    public EmpruntView(EmpruntController empruntController) {
+        this.empruntController = empruntController;
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);  // Arrière-plan blanc pour un look propre
 
-    // Panneau des actions
-    actionPanel = new JPanel(new BorderLayout());
+        // Table des emprunts
+        tableModel = new DefaultTableModel(new String[]{"ID", "Livre", "Utilisateur", "Date Emprunt", "Date Retour Prévue", "Retour Effective", "Rendu", "Pénalité"}, 0);
+        empruntTable = new JTable(tableModel);
+        empruntTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        empruntTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));  // Police moderne et lisible
+        empruntTable.setRowHeight(30);  // Hauteur des lignes plus grande pour une meilleure lisibilité
+        add(new JScrollPane(empruntTable), BorderLayout.CENTER);
 
-    // Panneau de recherche
-    JPanel searchPanel = new JPanel();
-    searchField = new JTextField(15);
-    searchButton = new JButton("Rechercher");
+        // Panneau des actions
+        actionPanel = new JPanel();
+        actionPanel.setLayout(new BorderLayout());
 
-    // Menu déroulant pour le type de recherche
-    String[] searchTypes = {"ID Emprunt", "ID Livre", "ID Utilisateur", "Date"};
-    searchTypeComboBox = new JComboBox<>(searchTypes);
-    
-    searchPanel.add(new JLabel("Recherche :"));
-    searchPanel.add(searchField);
-    searchPanel.add(searchTypeComboBox);
-    searchPanel.add(searchButton);
-    actionPanel.add(searchPanel, BorderLayout.NORTH);
- 
-    // Panneau des boutons
-    JPanel buttonPanel = new JPanel();
-    emprunterButton = new JButton("Emprunter Livre");
-    retournerButton = new JButton("Retourner Livre");
-    supprimerButton = new JButton("Supprimer Emprunt");
-    renouvelerButton = new JButton("Prolonger Emprunt");
+        // Panneau de recherche
+        JPanel searchPanel = new JPanel();
+        searchPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));  // Espace entre les composants
 
-    buttonPanel.add(emprunterButton);
-    buttonPanel.add(retournerButton);
-    buttonPanel.add(supprimerButton);
-    buttonPanel.add(renouvelerButton);
+        searchField = new JTextField(20);
+        searchButton = new JButton("Rechercher");
+        searchButton.setBackground(new Color(60, 179, 113));  // Vert moderne pour le bouton
+        searchButton.setForeground(Color.WHITE);
+        searchButton.setFocusPainted(false);
 
-    // Panneau de tri
-    JPanel triPanel = new JPanel();
-    triPanel.add(new JLabel("Trier par :"));
-    triComboBox = new JComboBox<>(new String[]{"Tous", "En cours", "Historique", "Par pénalités"});
-    triPanel.add(triComboBox);
+        // Menu déroulant pour le type de recherche
+        String[] searchTypes = {"ID Emprunt", "ID Livre", "ID Utilisateur", "Date"};
+        searchTypeComboBox = new JComboBox<>(searchTypes);
 
-    actionPanel.add(buttonPanel, BorderLayout.CENTER);
-    actionPanel.add(triPanel, BorderLayout.SOUTH); // Ajout en bas du panneau d'actions
-    add(actionPanel, BorderLayout.SOUTH);
+        searchPanel.add(new JLabel("Recherche :"));
+        searchPanel.add(searchField);
+        searchPanel.add(searchTypeComboBox);
+        searchPanel.add(searchButton);
 
-    // Charger les emprunts existants
-    chargerEmprunts("Tous");
-    // Configurer les actions des boutons
-    setupListeners();
-}
+        // Panneau des boutons
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(1, 4, 10, 10));  // Disposition en grille pour les boutons
+        buttonPanel.setBackground(new Color(245, 245, 245));  // Arrière-plan gris clair pour séparer visuellement
 
-private void setupListeners() {
-    // Écouteur pour le bouton de recherche
-    searchButton.addActionListener(e -> {
-        String searchText = searchField.getText().trim();
-        String searchType = (String) searchTypeComboBox.getSelectedItem(); // Récupérer le type de recherche
+        emprunterButton = new JButton("Emprunter Livre");
+        retournerButton = new JButton("Retourner Livre");
+        supprimerButton = new JButton("Supprimer Emprunt");
+        renouvelerButton = new JButton("Prolonger Emprunt");
 
-        if (!searchText.isEmpty()) {
-            List<Emprunt> resultats = empruntController.rechercherEmprunts(searchType, searchText); // Passer le type de recherche
-            tableModel.setRowCount(0); // Vider le tableau
-            for (Emprunt emprunt : resultats) {
-                // Récupérer le livre par ID
-                Livre livre = empruntController.getLivreById(emprunt.getLivreId());
-                String livreNom = (livre != null) ? livre.getTitre() : "Livre non trouvé";
+        styleButton(emprunterButton);
+        styleButton(retournerButton);
+        styleButton(supprimerButton);
+        styleButton(renouvelerButton);
 
-                // Récupérer l'utilisateur par ID
-                User user = empruntController.getUserById(String.valueOf(emprunt.getUserId()));
-                String userNom = (user != null) ? user.getNom() : "Utilisateur non trouvé";
+        buttonPanel.add(emprunterButton);
+        buttonPanel.add(retournerButton);
+        buttonPanel.add(supprimerButton);
+        buttonPanel.add(renouvelerButton);
 
-                // Ajouter une ligne au modèle de table
-                tableModel.addRow(new Object[]{
-                    emprunt.getId(),
-                    livreNom,
-                    userNom,
-                    emprunt.getDateEmprunt(),
-                    emprunt.getDateRetourPrevue(),
-                    emprunt.getDateRetourEffective(),
-                    emprunt.isRendu() ? "Oui" : "Non",
-                    emprunt.getPenalite()
-                });
- }
-        } else {
-            chargerEmprunts((String) triComboBox.getSelectedItem()); // Recharger selon le type de tri sélectionné
-        }
-    });
+        // Panneau de tri
+        JPanel triPanel = new JPanel();
+        triPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10)); // Alignement à gauche
+        triPanel.setBackground(new Color(245, 245, 245));  // Couleur de fond des filtres
 
-    // Écouteur pour le JComboBox de tri
-    triComboBox.addActionListener(e -> {
-        String selectedOption = (String) triComboBox.getSelectedItem();
-        chargerEmprunts(selectedOption); // Charger les emprunts selon l'option sélectionnée
-    });
+        triPanel.add(new JLabel("Trier par :"));
+        triComboBox = new JComboBox<>(new String[]{"Tous", "En cours", "Historique", "Par pénalités"});
+        triPanel.add(triComboBox);
 
-    // Écouteur pour le bouton "Emprunter Livre"
-    emprunterButton.addActionListener(e -> {
-        // Créer un formulaire pour saisir l'ID du livre et l'ID de l'utilisateur
-        JTextField livreIdField = new JTextField(10);
-        JTextField userIdField = new JTextField(10);
-        
-        JPanel myPanel = new JPanel();
-        myPanel.setLayout(new GridLayout(2, 2)); // Utiliser un GridLayout pour aligner les champs
-        myPanel.add(new JLabel("ID Livre:"));
-        myPanel.add(livreIdField);
-        myPanel.add(new JLabel("ID Utilisateur:"));
-        myPanel.add(userIdField);
-        
-        int result = JOptionPane.showConfirmDialog(null, myPanel, "Emprunter Livre", JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
-            try {
-                int livreId = Integer.parseInt(livreIdField.getText().trim());
-                String userId = userIdField.getText().trim();
+        // Ajouter tous les panneaux
+        actionPanel.add(searchPanel, BorderLayout.NORTH);
+        actionPanel.add(buttonPanel, BorderLayout.CENTER);
+        actionPanel.add(triPanel, BorderLayout.SOUTH);
 
-                // Récupérer le livre et l'utilisateur
-                Livre livre = empruntController.getLivreById(livreId);
-                User user = empruntController.getUserById(userId); // Assurez-vous que userId est de type String
+        add(actionPanel, BorderLayout.SOUTH);
 
-                if (livre != null && user != null) {
-                
-					empruntController.emprunterLivre(livre, user);
-                    chargerEmprunts((String) triComboBox.getSelectedItem()); // Recharger les emprunts après emprunt
-                } else {
-                    JOptionPane.showMessageDialog(this, "Livre ou utilisateur non trouvé.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        // Charger les emprunts existants
+        chargerEmprunts("Tous");
+        // Configurer les actions des boutons
+        setupListeners();
+    }
+
+    private void styleButton(JButton button) {
+        button.setBackground(new Color(60, 179, 113));  // Vert pour un look moderne
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        button.setPreferredSize(new Dimension(150, 40));  // Taille uniforme pour les boutons
+    }
+
+    private void setupListeners() {
+        // Écouteur pour le bouton de recherche
+        searchButton.addActionListener(e -> {
+            String searchText = searchField.getText().trim();
+            String searchType = (String) searchTypeComboBox.getSelectedItem();
+
+            if (!searchText.isEmpty()) {
+                List<Emprunt> resultats = empruntController.rechercherEmprunts(searchType, searchText);
+                tableModel.setRowCount(0);
+                for (Emprunt emprunt : resultats) {
+                    ajouterLigneEmprunt(emprunt);
                 }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Veuillez entrer un ID valide.", "Erreur", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    });
-
-    // Écouteur pour le bouton "Retourner Livre"
-    retournerButton.addActionListener(e -> {
-        int selectedRow = empruntTable.getSelectedRow();
-        if (selectedRow != -1) {
-            int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0); // Assurez-vous que c'est un Integer
-            empruntController.retournerLivre(idEmprunt);
-            chargerEmprunts((String) triComboBox.getSelectedItem()); // Recharger les emprunts après retour
-        } else {
-            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à retourner.", "Erreur", JOptionPane.ERROR_MESSAGE);
-        }
-    });
-
-    // Écouteur pour le bouton "Prolonger Emprunt"
-    renouvelerButton.addActionListener(e -> {
-        int selectedRow = empruntTable.getSelectedRow();
-        if (selectedRow != -1) {
-            int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0); // Assurez-vous que c'est un Integer
-            Emprunt emprunt = empruntController.getEmpruntById(idEmprunt);
-            if (emprunt != null && !emprunt.isRendu() && emprunt.getPenalite() == 0) {
-                empruntController.renouvelerEmprunt(idEmprunt);
-                chargerEmprunts((String) triComboBox.getSelectedItem()); // Recharger les emprunts après renouvellement
             } else {
-                JOptionPane.showMessageDialog(this, "L'emprunt ne peut pas être prolongé.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                chargerEmprunts((String) triComboBox.getSelectedItem());
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à prolonger.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        });
+
+        // Écouteur pour le JComboBox de tri
+        triComboBox.addActionListener(e -> chargerEmprunts((String) triComboBox.getSelectedItem()));
+
+        // Écouteur pour le bouton "Emprunter Livre"
+        emprunterButton.addActionListener(e -> {
+            JTextField livreIdField = new JTextField(10);
+            JTextField userIdField = new JTextField(10);
+            JPanel myPanel = new JPanel(new GridLayout(2, 2));
+            myPanel.add(new JLabel("ID Livre:"));
+            myPanel.add(livreIdField);
+            myPanel.add(new JLabel("ID Utilisateur:"));
+            myPanel.add(userIdField);
+
+            int result = JOptionPane.showConfirmDialog(null, myPanel, "Emprunter Livre", JOptionPane.OK_CANCEL_OPTION);
+            if (result == JOptionPane.OK_OPTION) {
+                try {
+                    int livreId = Integer.parseInt(livreIdField.getText().trim());
+                    String userId = userIdField.getText().trim();
+
+                    Livre livre = empruntController.getEntityById(String.valueOf(livreId), "Livre");
+                    User user = empruntController.getEntityById(userId, "User");
+
+                    if (livre != null && user != null) {
+                        empruntController.emprunterLivre(livre, user);
+                        chargerEmprunts((String) triComboBox.getSelectedItem());
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Livre ou utilisateur non trouvé.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Veuillez entrer un ID valide.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        // Écouteur pour le bouton "Retourner Livre"
+        retournerButton.addActionListener(e -> {
+            int selectedRow = empruntTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0);
+                empruntController.retournerLivre(idEmprunt);
+                chargerEmprunts((String) triComboBox.getSelectedItem());
+            } else {
+                JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à retourner.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Écouteur pour le bouton "Prolonger Emprunt"
+        renouvelerButton.addActionListener(e -> {
+            int selectedRow = empruntTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int idEmprunt = (int) tableModel.getValueAt(selectedRow, 0);
+                Emprunt emprunt = empruntController.getEntityById(String.valueOf(idEmprunt), "Emprunt");
+                if (emprunt != null && !emprunt.isRendu() && emprunt.getPenalite() == 0) {
+                    empruntController.renouvelerEmprunt(idEmprunt);
+                    chargerEmprunts((String) triComboBox.getSelectedItem());
+                } else {
+                    JOptionPane.showMessageDialog(this, "L'emprunt ne peut pas être prolongé.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt à prolonger.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+    }
+
+    public void chargerEmprunts(String triOption) {
+        List<Emprunt> emprunts = empruntController.chargerEmprunts(triOption);
+        tableModel.setRowCount(0);
+        for (Emprunt emprunt : emprunts) {
+            ajouterLigneEmprunt(emprunt);
         }
-    });
-}
+        empruntTable.revalidate();
+        empruntTable.repaint();
+    }
 
-public void chargerEmprunts(String triOption) {
-    List<Emprunt> emprunts = empruntController.chargerEmprunts(triOption); // Appel à la méthode du contrôleur
-    tableModel.setRowCount(0); // Vider le tableau
-
-    for (Emprunt emprunt : emprunts) {
-        // Récupérer le livre par ID
-        Livre livre = empruntController.getLivreById(emprunt.getLivreId());
+    private void ajouterLigneEmprunt(Emprunt emprunt) {
+        // Utilisation de la méthode générique getEntityById pour récupérer le livre et l'utilisateur
+        Livre livre = empruntController.getEntityById(String.valueOf(emprunt.getLivreId()), "Livre");
         String livreNom = (livre != null) ? livre.getTitre() : "Livre non trouvé";
 
-        // Récupérer l'utilisateur par ID
-        User user = empruntController.getUserById(String.valueOf(emprunt.getUserId()));
+        User user = empruntController.getEntityById(String.valueOf(emprunt.getUserId()), "User");
         String userNom = (user != null) ? user.getNom() : "Utilisateur non trouvé";
 
-        // Ajouter une ligne au modèle de table
+        // Ajout des données à la table
         tableModel.addRow(new Object[]{
             emprunt.getId(),
             livreNom,
@@ -211,12 +221,4 @@ public void chargerEmprunts(String triOption) {
             emprunt.getPenalite()
         });
     }
-
-    // Revalider et repeindre la table
-    empruntTable.revalidate();
-    empruntTable.repaint();
-}
-public void chargerEmprunts() {
-    chargerEmprunts("Tous"); // Appel à la méthode existante avec "Tous" comme argument par défaut
-}
 }

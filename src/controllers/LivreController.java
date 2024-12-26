@@ -2,12 +2,15 @@ package controllers;
 
 import model.Livre;
 import model.LivreDAO;
+ 
+import exception.LivreException;
 
+import javax.swing.JOptionPane;
+
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.swing.JOptionPane;
 
 public class LivreController {
     private LivreDAO livreDAO;
@@ -20,12 +23,12 @@ public class LivreController {
         return livreDAO.getAllLivres();
     }
 
-    public void addLivre(Livre livre) {
+    public void addLivre(Livre livre) throws LivreException {
         if (livreExists(livre.getId())) {
-            throw new IllegalArgumentException("Un livre avec cet ID existe déjà.");
+            throw new LivreException("Un livre avec cet ID existe déjà.");
         }
         if (livreExists(livre.getTitre(), livre.getAuteur(), livre.getAnneePublication(), livre.getIsbn())) {
-            throw new IllegalArgumentException("Un livre avec le même titre, auteur, année et ISBN existe déjà.");
+            throw new LivreException("Un livre avec le même titre, auteur, année et ISBN existe déjà.");
         }
         livreDAO.addLivre(livre); // Ajoutez le livre au DAO
     }
@@ -33,10 +36,59 @@ public class LivreController {
     public boolean livreExists(int id) {
         return getAllLivres().stream().anyMatch(livre -> livre.getId() == id);
     }
+    public void updateLivre(Livre livre, String titre, String auteur, int annee, String genre, String imageUrl, 
+            String isbn, String description, String editeur, int totalExemplaires) {
+	try {
+	// Validation des données
+	if (!isValidString(titre) || !isValidString(auteur) || !isValidString(genre) || !isValidString(isbn) 
+	|| !isValidString(description) || !isValidString(editeur)) {
+	throw new IllegalArgumentException("Tous les champs doivent être remplis.");
+	}
+	
+	if (annee <= 0 || totalExemplaires <= 0) {
+	throw new IllegalArgumentException("L'année et le nombre d'exemplaires doivent être positifs.");
+	}
+	
+	if (!isValidImageUrl(imageUrl)) {
+	throw new IllegalArgumentException("L'URL de l'image n'est pas valide.");
+	}
+	
+	// Mise à jour du livre dans le modèle
+	livre.setTitre(titre);
+	livre.setAuteur(auteur);
+	livre.setAnneePublication(annee);
+	livre.setGenre(genre);
+	livre.setImageUrl(imageUrl);
+	livre.setIsbn(isbn);
+	livre.setDescription(description);
+	livre.setEditeur(editeur);
+	livre.setTotalExemplaires(totalExemplaires);
+	
+	// Mise à jour du livre dans la base de données ou le modèle
+	livreDAO.updateLivre(livre);
+	
+	} catch (IllegalArgumentException e) {
+	showMessage(e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+	} catch (Exception e) {
+	showMessage("Une erreur s'est produite lors de la mise à jour du livre.", "Erreur", JOptionPane.ERROR_MESSAGE);
+	}
+	}
+	
+	//Méthode pour valider une chaîne de caractères non vide
+	private boolean isValidString(String str) {
+	return str != null && !str.trim().isEmpty();
+	}
 
-    public void updateLivre(Livre livre) {
-        livreDAO.updateLivre(livre);
-    }
+	//Méthode pour valider l'URL de l'image
+	public boolean isValidImageUrl(String url) {
+	    try {
+	        new java.net.URL(url); // Cela peut lancer MalformedURLException
+	        return true;  // URL valide
+	    } catch (MalformedURLException e) {
+	        return false; // URL invalide
+	    }
+	}
+	 
 
     public int getNextLivreId() {
         List<Livre> livres = getAllLivres();
@@ -46,8 +98,7 @@ public class LivreController {
         return livres.stream().mapToInt(Livre::getId).max().orElse(0) + 1; // Incrémentez le plus grand ID
     }
 
-    // Méthode générique pour rechercher des livres par différents critères
-    public List<Livre> searchLivres(String searchTerm, String criteria, boolean isAvailable) {
+    public List<Livre> searchLivres(String searchTerm, String criteria, boolean isAvailable) throws LivreException {
         List<Livre> resultats = new ArrayList<>();
 
         // Effectuer la recherche en fonction du critère
@@ -63,13 +114,11 @@ public class LivreController {
                     int annee = Integer.parseInt(searchTerm);
                     resultats = searchByAnnee(annee);
                 } catch (NumberFormatException e) {
-                    System.out.println("Erreur : Le terme de recherche pour l'année doit être un nombre valide.");
-                    return new ArrayList<>();
+                    throw new LivreException("Le terme de recherche pour l'année doit être un nombre valide.");
                 }
                 break;
-            default: 
-                System.out.println("Critère de recherche invalide. Veuillez choisir parmi : titre, auteur, annee.");
-                return new ArrayList<>();
+            default:
+                throw new LivreException("Critère de recherche invalide. Veuillez choisir parmi : titre, auteur, annee.");
         }
 
         // Filtrer par disponibilité si nécessaire
@@ -82,28 +131,24 @@ public class LivreController {
         return resultats;
     }
 
-    // Recherche spécifique par titre
     public List<Livre> searchByTitre(String titre) {
         return getAllLivres().stream()
                 .filter(livre -> livre.getTitre().toLowerCase().contains(titre.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
-    // Recherche spécifique par auteur
     public List<Livre> searchByAuteur(String auteur) {
         return getAllLivres().stream()
                 .filter(livre -> livre.getAuteur().toLowerCase().contains(auteur.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
-    // Recherche spécifique par année
     public List<Livre> searchByAnnee(int annee) {
         return getAllLivres().stream()
                 .filter(livre -> livre.getAnneePublication() == annee)
                 .collect(Collectors.toList());
     }
 
-    // Recherche spécifique par disponibilité
     public List<Livre> searchByDisponibilite(boolean disponible) {
         return getAllLivres().stream()
                 .filter(livre -> livre.isDisponible() == disponible)
@@ -124,10 +169,13 @@ public class LivreController {
         }
     }
 
-    public void deleteLivre(int id) {
+    public void deleteLivre(int id) throws LivreException {
+        if (!livreExists(id)) {
+            throw new LivreException("Le livre à supprimer n'existe pas.");
+        }
         livreDAO.deleteLivre(id); // Appel à la méthode de suppression dans le DAO
     }
-    
+
     public boolean livreExists(String titre, String auteur, int annee, String isbn) {
         return getAllLivres().stream()
                 .anyMatch(livre -> livre.getTitre().equalsIgnoreCase(titre) &&
@@ -135,8 +183,9 @@ public class LivreController {
                                    livre.getAnneePublication() == annee &&
                                    livre.getIsbn().equals(isbn));
     }
+
     public void showMessage(String message, String title, int messageType) {
         JOptionPane.showMessageDialog(null, message, title, messageType);
     }
-
+ 
 }

@@ -76,6 +76,7 @@ public class EmpruntDAO {
                 .findFirst()
                 .orElse(null);
     }
+    
     public void updateEmprunt(Emprunt emprunt) {
         for (int i = 0; i < emprunts.size(); i++) {
             if (emprunts.get(i).getId() == emprunt.getId()) {

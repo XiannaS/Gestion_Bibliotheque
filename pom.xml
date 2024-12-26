@@ -41,19 +41,14 @@
       <version>1.4</version>
     </dependency>
 
-    <!-- Dépendance pour JUnit 5 (Tests unitaires) -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>5.9.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.9.0</version>
-      <scope>test</scope>
-    </dependency>
+  <!-- https://mvnrepository.com/artifact/junit/junit -->
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+    <scope>test</scope>
+</dependency>
+
 
  
     <!-- Dépendance pour FlatLaf SwingX -->

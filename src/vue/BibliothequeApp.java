@@ -68,7 +68,7 @@ public class BibliothequeApp extends JFrame {
         	EmpruntView empruntView = new EmpruntView(empruntController);
 
         	// Créer une instance de LivreView en passant empruntView
-        	LivreView livreView = new LivreView(livreController, empruntView);
+        	LivreView livreView = new LivreView(livreController, empruntController, userController, empruntView);
             tabbedPane.addTab("Livres", livreView);
         }
 
@@ -83,7 +83,7 @@ public class BibliothequeApp extends JFrame {
         	// Créer une instance de EmpruntView
         	EmpruntView empruntView = new EmpruntView(empruntController);
 
-        	new LivreView(livreController, empruntView);
+        	new LivreView(livreController, empruntController, userController, empruntView);
             tabbedPane.addTab("Emprunts", empruntView);
         }
 
@@ -135,25 +135,42 @@ public class BibliothequeApp extends JFrame {
             // Si le thème est actuellement sombre, basculer vers le thème clair
             if (isDarkMode) {
                 if (!(UIManager.getLookAndFeel() instanceof FlatLightLaf)) {
+                    // Changer le Look and Feel vers FlatLightLaf
                     UIManager.setLookAndFeel(new FlatLightLaf());
-                    SwingUtilities.updateComponentTreeUI(this);
                 }
             } else {
                 if (!(UIManager.getLookAndFeel() instanceof FlatDraculaIJTheme)) {
+                    // Changer le Look and Feel vers FlatDraculaIJTheme
                     UIManager.setLookAndFeel(new FlatDraculaIJTheme());
-                    SwingUtilities.updateComponentTreeUI(this);
                 }
             }
+
+            // Actualiser l'UI en appelant updateComponentTreeUI après le changement de Look and Feel
+            SwingUtilities.updateComponentTreeUI(this); // Cela va forcer une mise à jour visuelle
+
+            // Changer le mode pour le prochain appel
             isDarkMode = !isDarkMode;
         } catch (UnsupportedLookAndFeelException ex) {
             ex.printStackTrace();
         }
     }
 
+
     private void onProfileClicked(ActionEvent e) {
-        // Action pour le bouton de profil (par exemple, afficher une fenêtre de profil ou de déconnexion)
-        JOptionPane.showMessageDialog(this, "Accès au profil de l'utilisateur.");
+        // Afficher un dialogue de confirmation pour savoir si l'utilisateur veut se déconnecter
+        int choice = JOptionPane.showConfirmDialog(this, "Voulez-vous vraiment quitter ?", "Confirmation de déconnexion", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        
+        // Si l'utilisateur clique sur "Oui"
+        if (choice == JOptionPane.YES_OPTION) {
+            // Vous pouvez fermer la fenêtre actuelle et ouvrir la fenêtre de connexion.
+            this.dispose(); // Ferme la fenêtre principale (BibliothequeApp)
+
+            // Créer et afficher la fenêtre de connexion (LoginView)
+            LoginView loginView = new LoginView(null);
+            loginView.setVisible(true);
+        }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
