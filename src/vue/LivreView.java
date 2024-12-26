@@ -56,7 +56,7 @@ public class LivreView extends JPanel {
         searchPanel.add(searchField);
         searchPanel.add(new JLabel("Critère : "));
         searchPanel.add(criteriaComboBox);
-        searchPanel.add(disponibleCheckBox);
+        
         searchPanel.add(searchButton);
         searchPanel.add(addButton); // Ajouter le bouton "Ajouter" au panneau de recherche
 
@@ -458,7 +458,7 @@ public class LivreView extends JPanel {
         }
 
         // Utiliser la méthode générique pour obtenir l'utilisateur
-        User user = empruntController.getEntityById(userId, "User ");
+        User user = empruntController.getEntityById(userId, "User");
         if (user == null) {
             JOptionPane.showMessageDialog(this, "Utilisateur introuvable.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
@@ -467,8 +467,7 @@ public class LivreView extends JPanel {
         // Emprunter le livre
         try {
             empruntController.emprunterLivre(livre, user);
-            JOptionPane.showMessageDialog(this, "Livre emprunté avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
-            
+           
             // Mettre à jour la vue des emprunts
             if (empruntView != null) {
                 empruntView.chargerEmprunts("Tous"); // Recharger tous les emprunts

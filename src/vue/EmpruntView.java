@@ -27,7 +27,7 @@ public class EmpruntView extends JPanel {
     public EmpruntView(EmpruntController empruntController) {
         this.empruntController = empruntController;
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);  // Arrière-plan blanc pour un look propre
+        
 
         // Table des emprunts
         tableModel = new DefaultTableModel(new String[]{"ID", "Livre", "Utilisateur", "Date Emprunt", "Date Retour Prévue", "Retour Effective", "Rendu", "Pénalité"}, 0);
@@ -221,4 +221,24 @@ public class EmpruntView extends JPanel {
             emprunt.getPenalite()
         });
     }
-}
+   
+	 public void ajouterEmprunt(Emprunt emprunt) {
+	        Livre livre = empruntController.getEntityById(String.valueOf(emprunt.getLivreId()), "Livre");
+	        User user = empruntController.getEntityById(String.valueOf(emprunt.getUserId()), "User");
+	
+	        String livreNom = (livre != null) ? livre.getTitre() : "Livre non trouvé";
+	        String userNom = (user != null) ? user.getNom() : "Utilisateur non trouvé";
+	
+	        // Ajout des données à la table
+	        tableModel.addRow(new Object[]{
+	            emprunt.getId(),
+	            livreNom,
+	            userNom,
+	            emprunt.getDateEmprunt(),
+	            emprunt.getDateRetourPrevue(),
+	            emprunt.getDateRetourEffective(),
+	            emprunt.isRendu() ? "Oui" : "Non",
+	            emprunt.getPenalite()
+	        });
+	    }
+	}

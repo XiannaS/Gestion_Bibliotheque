@@ -318,6 +318,14 @@ public class EmpruntController {
         return empruntModel.listerEmprunts();
     }
 
+    public Emprunt getLastEmprunt() {
+        List<Emprunt> emprunts = empruntModel.listerEmprunts();
+        if (emprunts.isEmpty()) {
+            return null; // Aucun emprunt trouvé
+        }
+        // Retourner le dernier emprunt (en supposant que la liste est triée par ID ou date)
+        return emprunts.get(emprunts.size() - 1); // Dernier emprunt dans la liste
+    }
     /**
      * Récupère un emprunt par son ID.
      *

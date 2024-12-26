@@ -2,7 +2,11 @@ package exception;
 
 public class EmpruntException extends Exception {
 
-    // Constructeur avec message d'erreur
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	// Constructeur avec message d'erreur
     public EmpruntException(String message) {
         super(message);
     }
