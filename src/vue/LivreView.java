@@ -201,7 +201,7 @@ public class LivreView extends JPanel {
 	    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 	
 	    // Icône pour modifier un livre
-	    ImageIcon editIcon = new ImageIcon(new ImageIcon("C:/Eclipse/gestionbibli/src/main/resources/ressources/edit-icon.png")
+	    ImageIcon editIcon = new ImageIcon(new ImageIcon("src/resources/edit-icon.png")
 	            .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
 	    JButton editButton = new JButton(editIcon);
 	    editButton.setToolTipText("Modifier");
@@ -209,7 +209,7 @@ public class LivreView extends JPanel {
 	    editButton.addActionListener(e -> updateLivreForm(livre));
 	
 	    // Icône pour supprimer un livre
-	    ImageIcon deleteIcon = new ImageIcon(new ImageIcon("C:/Eclipse/gestionbibli/src/main/resources/ressources/delete-icon.png")
+	    ImageIcon deleteIcon = new ImageIcon(new ImageIcon("/src/resources/delete-icon.png")
 	            .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
 	    JButton deleteButton = new JButton(deleteIcon);
 	    deleteButton.setToolTipText("Supprimer");
