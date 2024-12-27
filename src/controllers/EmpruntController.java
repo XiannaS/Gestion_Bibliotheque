@@ -48,26 +48,7 @@ public class EmpruntController {
         JOptionPane.showMessageDialog(empruntView, message, title, messageType);
     }
 
-    /**
-     * Récupère un livre par son ID.
-     *
-     * @param id L'ID du livre.
-     * @return Le livre correspondant à l'ID.
-     */
-    public Livre getLivreById(int id) {
-        return livreDAO.rechercherParID(id);
-    }
-
-    /**
-     * Récupère un utilisateur par son ID.
-     *
-     * @param id L'ID de l'utilisateur.
-     * @return L'utilisateur correspondant à l'ID.
-     */
-    public User getUserById(String id) {
-        return userDAO.rechercherParID(id);
-    }
-
+    
     /**
      * Permet à un utilisateur d'emprunter un livre.
      * 
@@ -143,11 +124,11 @@ public class EmpruntController {
         // Marquer l'emprunt comme retourné
         emprunt.retournerLivre();
 
-        // Mettre à jour la disponibilité du livre
-        Livre livre = getLivreById(emprunt.getLivreId());
+        // Récupérer le livre à partir de l'ID de l'emprunt
+        Livre livre = getEntityById(String.valueOf(emprunt.getLivreId()), "Livre"); // Utilisez l'ID du livre de l'emprunt
         if (livre != null) {
-            livre.retourner();
-            livreDAO.updateLivre(livre);
+            livre.retourner(); // Mettre à jour la disponibilité du livre
+            livreDAO.updateLivre(livre); // Sauvegarder les changements du livre
         } else {
             showMessage("Livre non trouvé.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
@@ -158,6 +139,7 @@ public class EmpruntController {
         chargerEmprunts("Tous");
         showMessage("Livre retourné avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
     }
+
 
     /**
      * Retourne la liste des emprunts en cours (non retournés).
@@ -233,7 +215,8 @@ public class EmpruntController {
     /**
      * Ajoute les écouteurs nécessaires aux composants de la vue.
      */
-    private void ajouterEcouteurs() {
+  
+  private void ajouterEcouteurs() {
        // empruntView.getEmprunterButton().addActionListener(e -> {
           //  Livre livre = empruntView.getSelectedLivre();
           //  User user = empruntView.getSelectedUser();
@@ -260,21 +243,29 @@ public class EmpruntController {
             supprimerEmprunt(empruntId);
         });
     }
-    public List<Emprunt> listerEmprunts() {
-        return empruntModel.listerEmprunts(); // Utilise le DAO pour lister les emprunts
-    }
-    public <T> T getEntityById(String id, String entityType) {
-        switch (entityType) {
-            case "User":
-                return (T) userDAO.rechercherParID(id);
-            case "Livre":
-                return (T) livreDAO.rechercherParID(Integer.parseInt(id));
-            case "Emprunt":
-                return (T) empruntModel.getEmpruntById(Integer.parseInt(id));
-            default:
-                throw new IllegalArgumentException("Type d'entité inconnu : " + entityType);
-        }
-    }
+   
+	 public List<Emprunt> listerEmprunts() {
+	        return empruntModel.listerEmprunts(); // Utilise le DAO pour lister les emprunts
+	    }
+	   
+	 public <T> T getEntityById(String id, String entityType) {
+		    try {
+		        switch (entityType) {
+		            case "User":
+		                return (T) userDAO.rechercherParID(id);  // Recherche d'un utilisateur
+		            case "Livre":
+		                return (T) livreDAO.rechercherParID(Integer.parseInt(id));  // Recherche d'un livre
+		            case "Emprunt":
+		                return (T) empruntModel.getEmpruntById(Integer.parseInt(id));  // Recherche d'un emprunt
+		            default:
+		                throw new IllegalArgumentException("Type d'entité inconnu : " + entityType);
+		        }
+		    } catch (Exception e) {
+		        showMessage("Erreur lors de la récupération de l'entité : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+		        return null;
+		    }
+		}
+
 
     public Emprunt getLastEmprunt() {
         List<Emprunt> emprunts = empruntModel.listerEmprunts();

@@ -104,6 +104,7 @@ public class LivreDAO {
             System.out.println("ID: " + livre.getId() + ", Titre: " + livre.getTitre());
         }
     }
+    
     public void afficherLivresDisponibles() {
         List<Livre> livres = getAllLivres();
         System.out.println("Livres disponibles à l'emprunt :");
@@ -112,5 +113,13 @@ public class LivreDAO {
                 System.out.println("ID: " + livre.getId() + ", Titre: " + livre.getTitre());
             }
         }
+    }
+    public int generateNewId() {
+        List<Livre> livres = getAllLivres();
+        int maxId = livres.stream()
+                .mapToInt(Livre::getId)
+                .max()
+                .orElse(0); // Si la liste est vide, le max sera 0
+        return maxId + 1; // L'ID suivant sera l'ID max + 1
     }
 }
