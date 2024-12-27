@@ -32,7 +32,7 @@ public class LivreView extends JPanel {
         criteriaComboBox = new JComboBox<>(new String[]{"Titre", "Auteur", "Année", "ISBN"});
         disponibleCheckBox = new JCheckBox("Disponible");
         searchButton = new JButton("Rechercher");
-        addButton = createButtonWithIcon("Ajouter un Livre");
+        addButton = createButtonWithIcon("Ajouter un Livre", "src/resources/add-icon.png");
 
         searchPanel.add(new JLabel("Rechercher : "));
         searchPanel.add(searchField);
@@ -81,34 +81,45 @@ public class LivreView extends JPanel {
         popularPanel.revalidate(); // Revalider le panneau
         popularPanel.repaint(); // Repeindre le panneau
     }
-
     // Créer un panneau individuel pour un livre
-    private JPanel createLivrePanel(Livre livre) {
-        JPanel livrePanel = new JPanel();
-        livrePanel.setLayout(new BoxLayout(livrePanel, BoxLayout.Y_AXIS));
-
-        // Créer l'image de couverture
-        ImageIcon imageIcon = new ImageIcon(livre.getImageUrl()); // Assurez-vous que l'URL de l'image est correcte
-        JLabel imageLabel = new JLabel(imageIcon);
-        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Centrer l'image
-
-        // Créer les autres informations du livre
-        JLabel titreLabel = new JLabel("Titre: " + livre.getTitre());
-        JLabel auteurLabel = new JLabel("Auteur: " + livre.getAuteur());
-        JLabel anneeLabel = new JLabel("Année: " + livre.getAnneePublication());
-
-        // Ajouter tout cela dans le panneau
-        livrePanel.add(imageLabel);
-        livrePanel.add(titreLabel);
-        livrePanel.add(auteurLabel);
-        livrePanel.add(anneeLabel);
-
-        livrePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Ajouter une bordure autour de chaque livre
-
-        return livrePanel;
-   
-    }
-
+  
+    
+	private JPanel createLivrePanel(Livre livre) {
+	    JPanel livrePanel = new JPanel();
+	    livrePanel.setLayout(new BoxLayout(livrePanel, BoxLayout.Y_AXIS));
+	
+	    // Créer l'image de couverture
+	    ImageIcon imageIcon;
+	    try {
+	        imageIcon = new ImageIcon(livre.getImageUrl()); // Assurez-vous que l'URL de l'image est correcte
+	        if (imageIcon.getIconWidth() == -1) {
+	            // Si l'image n'est pas trouvée, utiliser une image par défaut
+	            imageIcon = new ImageIcon("src/resources/default-book.jpeg");
+	        }
+	    } catch (Exception e) {
+	        imageIcon = new ImageIcon("src/resources/default-book.jpeg"); // Image par défaut
+	    }
+	
+	    JLabel imageLabel = new JLabel(imageIcon);
+	    imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Centrer l'image
+	
+	    // Créer les autres informations du livre
+	    JLabel titreLabel = new JLabel("Titre: " + livre.getTitre());
+	    JLabel auteurLabel = new JLabel("Auteur: " + livre.getAuteur());
+	    JLabel anneeLabel = new JLabel("Année: " + livre.getAnneePublication());
+	
+	    // Ajouter tout cela dans le panneau
+	    livrePanel.add(imageLabel);
+	    livrePanel.add(titreLabel);
+	    livrePanel.add(auteurLabel);
+	    livrePanel.add(anneeLabel);
+	
+	    livrePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Ajouter une bordure autour de chaque livre
+	
+	    return livrePanel;
+	}
+	    
+    
     // Méthode pour afficher les détails du livre sélectionné
     public void displayLivreDetails(Livre livre) {
         this.selectedLivre = livre;  // Sauvegarder le livre sélectionné
@@ -229,14 +240,17 @@ public class LivreView extends JPanel {
         return selectedLivre; // Retourner le livre sélectionné
     }
 
-    // Méthode utilitaire pour créer un bouton avec une icône
-    private JButton createButtonWithIcon(String text) {
+    private JButton createButtonWithIcon(String text, String iconPath) {
         JButton button = new JButton(text);
-        ImageIcon icon = new ImageIcon("src/resources/add_icon.png"); // Assurez-vous que le chemin est correct
-        button.setIcon(icon);
+        ImageIcon icon = new ImageIcon(iconPath); // Charge l'icône à partir du chemin spécifié
+
+        // Redimensionner l'icône
+        Image img = icon.getImage(); // Obtenir l'image de l'icône
+        Image newImg = img.getScaledInstance(20, 20, Image.SCALE_SMOOTH); // Redimensionner l'image
+        button.setIcon(new ImageIcon(newImg)); // Définir l'icône redimensionnée
+
         return button;
     }
-
     private void showMessage(String message, String title, int messageType) {
         JOptionPane.showMessageDialog(this, message, title, messageType);
     }
