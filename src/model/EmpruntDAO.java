@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 public class EmpruntDAO {
     private List<Emprunt> emprunts = new ArrayList<>();
     private String csvFileName;
@@ -76,6 +78,7 @@ public class EmpruntDAO {
                 .findFirst()
                 .orElse(null);
     }
+    
     public void updateEmprunt(Emprunt emprunt) {
         for (int i = 0; i < emprunts.size(); i++) {
             if (emprunts.get(i).getId() == emprunt.getId()) {
@@ -95,12 +98,30 @@ public class EmpruntDAO {
     public void renouvelerEmprunt(int empruntId) {
         for (Emprunt emprunt : emprunts) {
             if (emprunt.getId() == empruntId && !emprunt.isRendu()) {
+                if (emprunt.getNombreRenouvellements() >= 1) {
+                    throw new IllegalArgumentException("Renouvellement déjà effectué.");
+                }
+
                 LocalDate nouvelleDateRetour = emprunt.getDateRetourPrevue().plusDays(14); // Renouvelle de 14 jours
                 emprunt.setDateRetourPrevue(nouvelleDateRetour);
+                emprunt.setNombreRenouvellements(emprunt.getNombreRenouvellements() + 1);
                 sauvegarderCSV(); // Sauvegarde les modifications dans le fichier CSV
                 return;
             }
         }
         throw new IllegalArgumentException("Emprunt non trouvé ou déjà retourné.");
     }
+
+    public void supprimerTousLesEmprunts() throws IOException {
+        int choice = JOptionPane.showConfirmDialog(null, 
+            "Êtes-vous sûr de vouloir supprimer tous les emprunts ?", 
+            "Confirmation", JOptionPane.YES_NO_OPTION);
+
+        if (choice == JOptionPane.YES_OPTION) {
+            emprunts.clear();
+            nextId = 1; // Réinitialiser l'ID pour le prochain emprunt
+            sauvegarderCSV(); // Sauvegarder les modifications dans le fichier CSV
+        }
+    }
+
 }

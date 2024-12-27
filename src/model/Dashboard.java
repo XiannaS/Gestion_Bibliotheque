@@ -3,10 +3,6 @@ package model;
 import controllers.LivreController;
 import controllers.UserController;
 import controllers.EmpruntController;
-import model.Livre;
-import model.User;
-import model.Emprunt;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -65,19 +61,26 @@ public class Dashboard {
                 .collect(Collectors.toList());
     }
 
-    private List<User> getUtilisateursLesPlusActifs() {
-        // Implémentez la logique pour récupérer les utilisateurs les plus actifs
+    private List<Object> getUtilisateursLesPlusActifs() {
+        // Récupérer les emprunts et les regrouper par ID d'utilisateur
         return empruntController.listerEmprunts().stream()
+                // Regroupement par ID utilisateur avec comptage des emprunts
                 .collect(Collectors.groupingBy(Emprunt::getUserId, Collectors.counting()))
+                // Trier par le nombre d'emprunts (valeur de l'entrée), du plus grand au plus petit
                 .entrySet().stream()
                 .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
+                // Limiter les résultats à 5 utilisateurs les plus actifs
                 .limit(5)
-                .map(e -> empruntController.getUserById(e.getKey()))
+                // Mapper les ID utilisateurs vers les objets User correspondants
+                .map((Map.Entry<String, Long> e) -> empruntController.getEntityById(e.getKey(), "User")) // Préciser le type dans map
+                // Collecter le résultat final dans une liste
                 .collect(Collectors.toList());
     }
+
 
     private Map<String, Long> getStatistiquesParGenre() {
         return livreController.getAllLivres().stream()
                 .collect(Collectors.groupingBy(Livre::getGenre, Collectors.counting()));
     }
+    
 }

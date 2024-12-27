@@ -5,17 +5,17 @@ import model.Role;
 import model.User;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserView extends JPanel {
-    private JTextField nomField, prenomField, emailField, numeroTelField;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JTextField nomField, prenomField, emailField, numeroTelField;
     private JComboBox<Role> roleComboBox;
     private JCheckBox statutCheckBox;
     private JTable userTable;
@@ -143,20 +143,20 @@ public class UserView extends JPanel {
             return;
         }
 
-        // Vérifiez si l'utilisateur existe déjà
-        if (userController.userExists(email)) {
-            JOptionPane.showMessageDialog(this, "L'utilisateur avec cet email existe déjà.", "Erreur", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
+        // Créer un nouvel utilisateur
         String id = String.valueOf(System.currentTimeMillis()); // Générer un ID unique
         User user = new User(id, nom, prenom, email, numeroTel, "", role, statut);
-        userController.addUser (user);
-        JOptionPane.showMessageDialog(this, "Utilisateur ajouté avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
-        clearFields();
-        displayUsers();
+        
+        try {
+            userController.addUser (user);
+            JOptionPane.showMessageDialog(this, "Utilisateur ajouté avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
+            clearFields();
+            displayUsers();
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
     }
-
+    
     private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
         return email.matches(emailRegex);

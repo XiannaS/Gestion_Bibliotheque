@@ -12,6 +12,7 @@ public class Emprunt {
     private LocalDate dateRetourEffective;
     private boolean rendu;
     private int penalite;
+    private int nombreRenouvellements;
 
     // Constructeur
     public Emprunt(int id, int livreId, String userId, LocalDate dateEmprunt, LocalDate dateRetourPrevue, LocalDate dateRetourEffective, boolean rendu, int penalite) {
@@ -28,7 +29,18 @@ public class Emprunt {
     public void setId(int id) {
         this.id = id;
     }
+    public int getNombreRenouvellements() {
+        return nombreRenouvellements;
+    }
 
+    public void setNombreRenouvellements(int nombreRenouvellements) {
+        this.nombreRenouvellements = nombreRenouvellements;
+    }
+
+    // Méthode pour vérifier si l'emprunt a déjà été renouvelé une fois
+    public boolean peutEtreRenouvele() {
+        return nombreRenouvellements < 1;
+    }
     // Getters et setters existants
     public int getId() { return id; }
     public int getLivreId() { return livreId; }
@@ -89,4 +101,8 @@ public class Emprunt {
     public void setDateRetourPrevue(LocalDate dateRetourPrevue) {
         this.dateRetourPrevue = dateRetourPrevue;
     }
+	public void setPenalite(int penalite) {
+		   this.penalite = penalite;
+		
+	}
 }
