@@ -470,7 +470,7 @@ public class LivreView extends JPanel {
            
             // Mettre à jour la vue des emprunts
             if (empruntView != null) {
-                empruntView.chargerEmprunts("Tous"); // Recharger tous les emprunts
+                empruntController.chargerEmprunts("Tous"); // Recharger tous les emprunts
             } else {
                 System.out.println("Erreur : empruntView est null.");
             }

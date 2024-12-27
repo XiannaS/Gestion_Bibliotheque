@@ -11,17 +11,15 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.intellijthemes.FlatDraculaIJTheme;
 
 public class BibliothequeApp extends JFrame {
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private JTabbedPane tabbedPane;
+    private static final long serialVersionUID = 1L;
+    private JTabbedPane tabbedPane;
     private JButton toggleThemeButton;
     private JButton profileButton;
     private JButton notificationButton;
     private JLabel welcomeLabel;
     private boolean isDarkMode = true;
 
+    // Constructeur de la classe BibliothequeApp
     public BibliothequeApp() {
         setTitle("Gestion de Bibliothèque");
         setSize(800, 600);
@@ -32,13 +30,14 @@ public class BibliothequeApp extends JFrame {
         LivreController livreController = null;
         UserController userController = null;
         EmpruntController empruntController = null;
-
+        EmpruntView empruntView = new EmpruntView();
+        // Chargement des contrôleurs et gestion des exceptions pour chaque
         try {
             livreController = new LivreController("C:/Eclipse/gestionbibli/src/main/resources/ressources/books.csv");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des livres : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
- 
+
         try {
             userController = new UserController("C:/Eclipse/gestionbibli/src/main/resources/ressources/users.csv");
         } catch (Exception e) {
@@ -46,7 +45,7 @@ public class BibliothequeApp extends JFrame {
         }
 
         try {
-            empruntController = new EmpruntController(
+            empruntController = new EmpruntController(empruntView,
                 "C:/Eclipse/gestionbibli/src/main/resources/ressources/emprunt.csv",
                 "C:/Eclipse/gestionbibli/src/main/resources/ressources/books.csv",
                 "C:/Eclipse/gestionbibli/src/main/resources/ressources/users.csv"
@@ -55,36 +54,28 @@ public class BibliothequeApp extends JFrame {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des emprunts : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
 
-        // Onglet pour le tableau de bord
+        // Création du panneau d'onglets
+        tabbedPane = new JTabbedPane();
+
+        // Vérification de l'initialisation des contrôleurs avant d'ajouter des vues
         if (livreController != null && userController != null && empruntController != null) {
             DashboardView dashboardView = new DashboardView(livreController, userController, empruntController);
-            tabbedPane = new JTabbedPane();
             tabbedPane.addTab("Tableau de Bord", dashboardView);
         }
 
-        // Onglet pour gérer les livres
         if (livreController != null) {
-        	// Créer une instance de EmpruntView
-        	EmpruntView empruntView = new EmpruntView(empruntController);
-        	empruntController.addObserver(empruntView);
-
-        	// Créer une instance de LivreView en passant empruntView
-        	LivreView livreView = new LivreView(livreController, empruntController, userController, empruntView);
+            
+            LivreView livreView = new LivreView(livreController, empruntController, userController, empruntView);
             tabbedPane.addTab("Livres", livreView);
         }
 
-        // Onglet pour gérer les utilisateurs
         if (userController != null) {
             UserView userView = new UserView(userController);
             tabbedPane.addTab("Utilisateurs", userView);
         }
 
-        // Onglet pour gérer les emprunts
         if (empruntController != null) {
-        	// Créer une instance de EmpruntView
-        	EmpruntView empruntView = new EmpruntView(empruntController);
-
-        	new LivreView(livreController, empruntController, userController, empruntView);
+            
             tabbedPane.addTab("Emprunts", empruntView);
         }
 
@@ -105,7 +96,7 @@ public class BibliothequeApp extends JFrame {
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         profileButton = new JButton(profileIcon);
         profileButton.setToolTipText("Profil");
-        profileButton.setPreferredSize(new Dimension(30, 30)); // Ajust ez la taille du bouton si nécessaire
+        profileButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
         profileButton.addActionListener(this::onProfileClicked);
         headerPanel.add(profileButton);
 
@@ -127,78 +118,44 @@ public class BibliothequeApp extends JFrame {
         add(tabbedPane, BorderLayout.CENTER);  // Ajouter les onglets au centre
     }
 
-    public boolean isDarkMode() {
-        return isDarkMode;
+    /**
+     * Action qui gère le clic sur le bouton de profil
+     *
+     * @param event L'événement de clic
+     */
+    private void onProfileClicked(ActionEvent event) {
+        // Action à effectuer lors du clic sur le profil
+        JOptionPane.showMessageDialog(this, "Profil de l'utilisateur sélectionné.", "Profil", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void toggleTheme(ActionEvent e) {
-        try {
-            // Si le thème est actuellement sombre, basculer vers le thème clair
-            if (isDarkMode) {
-                if (!(UIManager.getLookAndFeel() instanceof FlatLightLaf)) {
-                    // Changer le Look and Feel vers FlatLightLaf
-                    UIManager.setLookAndFeel(new FlatLightLaf());
-                }
-            } else {
-                if (!(UIManager.getLookAndFeel() instanceof FlatDraculaIJTheme)) {
-                    // Changer le Look and Feel vers FlatDraculaIJTheme
-                    UIManager.setLookAndFeel(new FlatDraculaIJTheme());
-                }
-            }
-
-            // Actualiser l'UI en appelant updateComponentTreeUI après le changement de Look and Feel
-            SwingUtilities.updateComponentTreeUI(this); // Cela va forcer une mise à jour visuelle
-
-            // Changer le mode pour le prochain appel
-            isDarkMode = !isDarkMode;
-        } catch (UnsupportedLookAndFeelException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-
-    private void onProfileClicked(ActionEvent e) {
-        // Afficher un dialogue de confirmation pour savoir si l'utilisateur veut se déconnecter
-        int choice = JOptionPane.showConfirmDialog(this, "Voulez-vous vraiment quitter ?", "Confirmation de déconnexion", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-        
-        // Si l'utilisateur clique sur "Oui"
-        if (choice == JOptionPane.YES_OPTION) {
-            // Vous pouvez fermer la fenêtre actuelle et ouvrir la fenêtre de connexion.
-            this.dispose(); // Ferme la fenêtre principale (BibliothequeApp)
-
-            // Créer et afficher la fenêtre de connexion (LoginView)
-            LoginView loginView = new LoginView(null);
-            loginView.setVisible(true);
-        }
-    }
-
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
+    /**
+     * Bascule entre le mode sombre et le mode clair
+     *
+     * @param event L'événement de clic
+     */
+    private void toggleTheme(ActionEvent event) {
+        if (isDarkMode) {
             try {
-                // Appliquer le thème par défaut (par exemple, FlatLightLaf ou autre)
-                UIManager.setLookAndFeel(new FlatLightLaf()); // Par défaut, ici on met un thème clair
-
-                // Créer et afficher l'application
-                BibliothequeApp app = new BibliothequeApp();
-                app.setVisible(true);
+                UIManager.setLookAndFeel(new FlatLightLaf());
             } catch (UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
             }
+        } else {
+            try {
+                UIManager.setLookAndFeel(new FlatDraculaIJTheme());
+            } catch (UnsupportedLookAndFeelException e) {
+                e.printStackTrace();
+            }
+        }
+        // Mettre à jour l'interface graphique
+        SwingUtilities.updateComponentTreeUI(this);
+        isDarkMode = !isDarkMode;
+    }
+
+    public static void main(String[] args) {
+        // Assurez-vous de lancer l'UI sur le thread de l'Event Dispatching (EDT)
+        SwingUtilities.invokeLater(() -> {
+            new BibliothequeApp().setVisible(true);
         });
     }
 }
-// main pour login
-//public static void main(String[] args) {
-  //  SwingUtilities.invokeLater(() -> {
-    //    try {
-      //      UIManager.setLookAndFeel(new FlatLightLaf()); // Appliquer le thème par défaut
-
-            // Créer et afficher la fenêtre de connexion
-        //    LoginView loginView = new LoginView(new BibliothequeApp());
-          //  loginView.setVisible(true);
-        //} catch (UnsupportedLookAndFeelException e) {
-//    e.printStackTrace();
-            //  }
-// });
-//}

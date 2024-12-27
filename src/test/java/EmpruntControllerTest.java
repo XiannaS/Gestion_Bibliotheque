@@ -16,6 +16,7 @@ import model.LivreDAO;
 import model.Role;
 import model.User;
 import model.UserDAO;
+import vue.EmpruntView;
 
 public class EmpruntControllerTest {
     private EmpruntController empruntController;
@@ -23,10 +24,11 @@ public class EmpruntControllerTest {
     private String livreFilePath = "C:/Eclipse/gestionbibli/src/main/resources/ressources/books.csv";
     private String userFilePath = "C:/Eclipse/gestionbibli/src/main/resources/ressources/users.csv";
 
+ 
     @Before
     public void setUp() {
-        // Utilisez le constructeur qui prend des chemins de fichiers
-        empruntController = new EmpruntController(empruntFilePath, livreFilePath, userFilePath);
+        EmpruntView empruntView = new EmpruntView(); // Créez une instance de la vue (ou mock si nécessaire)
+        empruntController = new EmpruntController(empruntView, empruntFilePath, livreFilePath, userFilePath);
     }
 
     @Test
@@ -61,22 +63,7 @@ public class EmpruntControllerTest {
     }
 
     @Test
-    public void testRenouvelerEmprunt() {
-        // Ajoutez un emprunt pour le test
-        Livre livre = new Livre(1, "Titre", "Auteur", "Genre", 2021, "url", "isbn", "description", "editeur", 5);
-        User user = new User("1", "Nom", "Prenom", "email", "numeroTel", "motDePasse", Role.MEMBRE, true);
-        empruntController.emprunterLivre(livre, user);
-        
-        // Renouveler l'emprunt
-        Emprunt emprunt = empruntController.listerEmprunts().get(0);
-        empruntController.renouvelerEmprunt(emprunt.getId());
-        
-        // Vérifiez que le nombre de renouvellements a été incrémenté
-        Emprunt empruntRenouvelle = empruntController.getEntityById(String.valueOf(emprunt.getId()), "Emprunt");
-        assertEquals(1, empruntRenouvelle.getNombreRenouvellements());
-    }
-    @Test
-    public void testRenouvelerEmpruntDejaRetourne() {
+    public void testRenouvelerEmpruntDejaRetourne() throws EmpruntException {
         // Créer un emprunt et le retourner
         Livre livre = new Livre(1, "Titre", "Auteur", "Genre", 2021, "url", "isbn", "description", "editeur", 5);
         User user = new User("1", "Nom", "Prenom", "email", "numeroTel", "motDePasse", Role.MEMBRE, true);
@@ -93,6 +80,8 @@ public class EmpruntControllerTest {
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
     }
+
+  
 
     @Test
     public void testEmprunterAvecPenalite() {

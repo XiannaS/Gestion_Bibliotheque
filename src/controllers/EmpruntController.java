@@ -2,17 +2,16 @@ package controllers;
 
 import model.Emprunt;
 import model.EmpruntDAO;
-import model.EmpruntObserver;
 import model.Livre;
 import model.LivreDAO;
 import model.User;
 import model.UserDAO;
+import vue.EmpruntView;
 import javax.swing.*;
 import exception.EmpruntException;
-
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
@@ -24,53 +23,49 @@ public class EmpruntController {
     private EmpruntDAO empruntModel;
     private UserDAO userDAO;
     private LivreDAO livreDAO;
+    private EmpruntView empruntView;
     private static final Logger LOGGER = Logger.getLogger(EmpruntController.class.getName());
-    private List<EmpruntObserver> observers = new ArrayList<>();
+
     /**
      * Constructeur pour initialiser les DAOs pour les emprunts, les utilisateurs et les livres.
      *
+     * @param empruntView La vue liée au contrôleur
      * @param csvFileEmprunts Le fichier CSV contenant les emprunts.
      * @param csvFileLivres Le fichier CSV contenant les livres.
      * @param csvFileUsers Le fichier CSV contenant les utilisateurs.
      */
-    public EmpruntController(String csvFileEmprunts, String csvFileLivres, String csvFileUsers) {
+    public EmpruntController(EmpruntView empruntView, String csvFileEmprunts, String csvFileLivres, String csvFileUsers) {
         this.empruntModel = new EmpruntDAO(csvFileEmprunts);
         this.livreDAO = new LivreDAO(csvFileLivres);
         this.userDAO = new UserDAO(csvFileUsers);
-        new ArrayList<>();
-        
+        this.empruntView = empruntView;
+        ajouterEcouteurs();
+        chargerEmprunts("Tous");
     }
-    
-    // Méthode pour ajouter un observateur
-    public void addObserver(EmpruntObserver observer) {
-        observers.add(observer);
+
+    // Méthode centralisée pour afficher les messages d'information et d'erreur
+    private void showMessage(String message, String title, int messageType) {
+        JOptionPane.showMessageDialog(empruntView, message, title, messageType);
     }
-    // Méthode pour notifier tous les observateurs
-    private void notifyObservers() {
-        for (EmpruntObserver observer : observers) {
-            observer.onEmpruntChanged();
-        }
-    }
+
     /**
-     * Récupère une entité (Livre ou User) par son ID.
+     * Récupère un livre par son ID.
      *
-     * @param id L'ID de l'entité à rechercher.
-     * @param entityType Le type d'entité (Livre ou User).
-     * @param <T> Le type de l'entité.
-     * @return L'entité correspondante à l'ID et au type spécifié.
-     * @throws IllegalArgumentException Si le type d'entité est inconnu.
+     * @param id L'ID du livre.
+     * @return Le livre correspondant à l'ID.
      */
-    public <T> T getEntityById(String id, String entityType) {
-        switch (entityType) {
-            case "Livre":
-                return (T) livreDAO.rechercherParID(Integer.parseInt(id));
-            case "User":
-                return (T) userDAO.rechercherParID(id);
-            case "Emprunt": // Ajout du cas pour Emprunt
-                return (T) empruntModel.getEmpruntById(Integer.parseInt(id)); // Assurez-vous que cette méthode existe dans EmpruntDAO
-            default:
-                throw new IllegalArgumentException("Type d'entité inconnu");
-        }
+    public Livre getLivreById(int id) {
+        return livreDAO.rechercherParID(id);
+    }
+
+    /**
+     * Récupère un utilisateur par son ID.
+     *
+     * @param id L'ID de l'utilisateur.
+     * @return L'utilisateur correspondant à l'ID.
+     */
+    public User getUserById(String id) {
+        return userDAO.rechercherParID(id);
     }
 
     /**
@@ -80,48 +75,57 @@ public class EmpruntController {
      * @param user L'utilisateur qui souhaite emprunter le livre.
      */
     public void emprunterLivre(Livre livre, User user) {
-        // Vérifier si le livre est disponible
+        // Vérification si le livre est disponible
         if (!livre.isDisponible()) {
-            JOptionPane.showMessageDialog(null, "Aucun exemplaire disponible pour emprunt.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            showMessage("Aucun exemplaire disponible pour emprunt.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         // Vérifier si l'utilisateur est actif
         if (!user.isStatut()) {
-            JOptionPane.showMessageDialog(null, "L'utilisateur n'est pas actif.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            showMessage("L'utilisateur n'est pas actif.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
         }
+
         // Vérifier les pénalités
         List<Emprunt> empruntsEnCours = getEmpruntsEnCours();
         for (Emprunt emprunt : empruntsEnCours) {
             if (emprunt.getUserId().equals(user.getId()) && emprunt.getPenalite() > 0) {
-                JOptionPane.showMessageDialog(null, "L'utilisateur a des pénalités. Emprunt impossible.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                showMessage("L'utilisateur a des pénalités. Emprunt impossible.", "Erreur", JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
+
         // Vérifier si l'utilisateur a déjà emprunté ce livre
-     
-        for (Emprunt emprunt : empruntsEnCours) {
-            if (emprunt.getLivreId() == livre.getId() && emprunt.getUserId().equals(user.getId())) {
-                JOptionPane.showMessageDialog(null, "L'utilisateur a déjà emprunté ce livre.", "Erreur", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+        if (hasUserAlreadyBorrowedBook(user, livre)) {
+            showMessage("L'utilisateur a déjà emprunté ce livre.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
-        // Définir la date de retour prévue exemple, 14 jours après l'emprunt
+        // Créer un emprunt
         LocalDate dateRetourPrevue = LocalDate.now().plusDays(7);
-
-        // Créer l'emprunt avec tous les paramètres nécessaires
         Emprunt emprunt = new Emprunt(0, livre.getId(), user.getId(), LocalDate.now(), dateRetourPrevue, null, false, 0);
-
+        
         // Ajouter l'emprunt au modèle
         empruntModel.ajouterEmprunt(emprunt);
-        notifyObservers();
-        // Mettre à jour la disponibilité du livre
-        livre.emprunter(); // Décrémenter le nombre d'exemplaires disponibles
-        livreDAO.updateLivre(livre); // Mettre à jour le livre dans le modèle
 
-        JOptionPane.showMessageDialog(null, "Livre emprunté avec succès.");
+        // Mise à jour de la disponibilité du livre
+        livre.emprunter();
+        livreDAO.updateLivre(livre); 
+        chargerEmprunts("Tous");
+        showMessage("Livre emprunté avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Vérifie si un utilisateur a déjà emprunté ce livre.
+     * 
+     * @param user L'utilisateur.
+     * @param livre Le livre.
+     * @return true si l'utilisateur a déjà emprunté ce livre, false sinon.
+     */
+    public boolean hasUserAlreadyBorrowedBook(User user, Livre livre) {
+        return empruntModel.listerEmprunts().stream()
+                .anyMatch(e -> e.getUserId().equals(user.getId()) && e.getLivreId() == livre.getId() && !e.isRendu());
     }
 
     /**
@@ -130,38 +134,30 @@ public class EmpruntController {
      * @param empruntId L'ID de l'emprunt à retourner.
      */
     public void retournerLivre(int empruntId) {
-        // Retrieve the loan record by its ID
         Emprunt emprunt = empruntModel.getEmpruntById(empruntId);
-        
-        // Check if the loan exists and if it has already been returned
         if (emprunt == null || emprunt.isRendu()) {
-            JOptionPane.showMessageDialog(null, "Emprunt non trouvé ou déjà retourné.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            showMessage("Emprunt non trouvé ou déjà retourné.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Mark the loan as returned
+        // Marquer l'emprunt comme retourné
         emprunt.retournerLivre();
 
-        // Retrieve the associated book using getEntityById
-        Livre livre = (Livre) getEntityById(String.valueOf(emprunt.getLivreId()), "Livre");
-        
-        // Check if the book was found
+        // Mettre à jour la disponibilité du livre
+        Livre livre = getLivreById(emprunt.getLivreId());
         if (livre != null) {
-            livre.retourner(); // Increase the number of available copies
-            livreDAO.updateLivre(livre); // Update the book in the model
+            livre.retourner();
+            livreDAO.updateLivre(livre);
         } else {
-            JOptionPane.showMessageDialog(null, "Livre non trouvé.", "Erreur", JOptionPane.ERROR_MESSAGE);
-            return; // Exit if the book is not found
+            showMessage("Livre non trouvé.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
-        // Update the loan record in the model
+        // Mise à jour de l'emprunt
         empruntModel.updateEmprunt(emprunt);
-        
-        // Notify the user of success
-        JOptionPane.showMessageDialog(null, "Livre retourné avec succès.");
+        chargerEmprunts("Tous");
+        showMessage("Livre retourné avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
     }
-
-  
 
     /**
      * Retourne la liste des emprunts en cours (non retournés).
@@ -186,93 +182,35 @@ public class EmpruntController {
     }
 
     /**
-     * Retourne la liste des emprunts triés par pénalités, du plus élevé au plus bas.
+     * Renouvelle un emprunt si possible.
      *
-     * @return La liste des emprunts triés par pénalités.
+     * @param empruntId L'ID de l'emprunt à renouveler.
      */
-    public List<Emprunt> getEmpruntsTriesParPenalite() {
-        return empruntModel.listerEmprunts().stream()
-                .sorted((e1, e2) -> Integer.compare(e2.getPenalite(), e1.getPenalite()))
-                .toList();
-    }
+    public void renouvelerEmprunt(int empruntId) throws EmpruntException {
+        Emprunt emprunt = empruntModel.getEmpruntById(empruntId);
+		if (emprunt == null || emprunt.isRendu()) {
+		    showMessage("Emprunt non trouvé ou déjà retourné.", "Erreur", JOptionPane.ERROR_MESSAGE);
+		    return;
+		}
 
-    /**
-     * Recherche des emprunts selon différents critères de recherche.
-     *
-     * @param searchType Le type de critère de recherche (ID Emprunt, ID Livre, ID Utilisateur, Date).
-     * @param searchText Le texte de recherche.
-     * @return Une liste d'emprunts correspondant à la recherche.
-     */
-    public List<Emprunt> rechercherEmprunts(String searchType, String searchText) {
-        List<Emprunt> resultats = new ArrayList<>();
-        for (Emprunt emprunt : listerEmprunts()) {
-            switch (searchType) {
-                case "ID Emprunt":
-                    if (String.valueOf(emprunt.getId()).contains(searchText)) {
-                        resultats.add(emprunt);
-                    }
-                    break;
-                case "ID Livre":
-                    if (String.valueOf(emprunt.getLivreId()).contains(searchText)) {
-                        resultats.add(emprunt);
-                    }
-                    break;
-                case "ID Utilisateur":
-                    if (String.valueOf(emprunt.getUserId()).contains(searchText)) {
-                        resultats.add(emprunt);
-                    }
-                    break;
-                case "Date":
-                    if (emprunt.getDateEmprunt().toString().contains(searchText) ||
-                        emprunt.getDateRetourPrevue().toString().contains(searchText)) {
-                        resultats.add(emprunt);
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-        return resultats;
-    }
+		if (emprunt.getPenalite() > 0) {
+		    showMessage("L'emprunt a une pénalité. Renouvellement impossible.", "Erreur", JOptionPane.ERROR_MESSAGE);
+		    return;
+		}
 
-    /**
-     * Permet de charger les emprunts en fonction d'un critère de tri spécifique.
-     *
-     * @param triOption Le critère de tri (En cours, Historique, Par pénalités, Tous).
-     * @return La liste des emprunts triés selon l'option choisie.
-     */
-    public List<Emprunt> chargerEmprunts(String triOption) {
-        List<Emprunt> emprunts;
-        switch (triOption) {
-            case "En cours":
-                emprunts = getEmpruntsEnCours();
-                break;
-            case "Historique":
-                emprunts = getHistoriqueEmprunts();
-                break;
-            case "Par pénalités":
-                emprunts = getEmpruntsTriesParPenalite();
-                break;
-            case "Tous":
-                emprunts = listerEmprunts();
-                break;
-            default:
-                emprunts = listerEmprunts(); // Par défaut, lister tous les emprunts
-        }
+		if (emprunt.getNombreRenouvellements() >= 1) {
+		    showMessage("Le renouvellement ne peut être effectué plus d'une fois.", "Erreur", JOptionPane.ERROR_MESSAGE);
+		    return;
+		}
 
-        return emprunts;
-    }
+		// Renouveler l'emprunt
+		emprunt.setNombreRenouvellements(emprunt.getNombreRenouvellements() + 1);
+		LocalDate nouvelleDateRetourPrevue = emprunt.getDateRetourPrevue().plusDays(14);
+		emprunt.setDateRetourPrevue(nouvelleDateRetourPrevue);
 
-    /**
-     * Supprime tous les emprunts dans le modèle.
-     */
-    public void supprimerTousLesEmprunts() {
-        try {
-            empruntModel.supprimerTousLesEmprunts();
-            JOptionPane.showMessageDialog(null, "Tous les emprunts ont été supprimés avec succès.");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Erreur lors de la suppression des emprunts : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-        }
+		empruntModel.updateEmprunt(emprunt);
+		 chargerEmprunts("Tous");
+		showMessage("Emprunt renouvelé avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
@@ -281,84 +219,86 @@ public class EmpruntController {
      * @param empruntId L'ID de l'emprunt à supprimer.
      */
     public void supprimerEmprunt(int empruntId) {
-        try {
-            empruntModel.supprimerEmprunt(empruntId);
-            JOptionPane.showMessageDialog(null, "Emprunt supprimé avec succès.");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Erreur lors de la suppression de l'emprunt : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        Emprunt emprunt = empruntModel.getEmpruntById(empruntId);
+        if (emprunt == null) {
+            showMessage("Emprunt non trouvé.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        empruntModel.supprimerEmprunt(empruntId);
+        chargerEmprunts("Tous");
+        showMessage("Emprunt supprimé avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
-     * Renouvelle un emprunt, si possible.
-     * Un emprunt peut être renouvelé une seule fois, et seulement si aucune pénalité n'existe.
-     *
-     * @param empruntId L'ID de l'emprunt à renouveler.
+     * Ajoute les écouteurs nécessaires aux composants de la vue.
      */
-    public void renouvelerEmprunt(int empruntId) {
-        try {
-            Emprunt emprunt = empruntModel.getEmpruntById(empruntId);
-            if (emprunt == null) {
-                throw new EmpruntException.EmpruntDejaRetourneException("Emprunt non trouvé.");
-            }
+    private void ajouterEcouteurs() {
+       // empruntView.getEmprunterButton().addActionListener(e -> {
+          //  Livre livre = empruntView.getSelectedLivre();
+          //  User user = empruntView.getSelectedUser();
+           // emprunterLivre(livre, user);
+       // });
 
-            // Vérifier si l'emprunt a déjà été retourné
-            if (emprunt.isRendu()) {
-                throw new EmpruntException.EmpruntDejaRetourneException("L'emprunt a déjà été retourné.");
-            }
+        empruntView.getRetournerButton().addActionListener(e -> {
+            int empruntId = empruntView.getSelectedEmpruntId();
+            retournerLivre(empruntId);
+        });
 
-            // Vérification des pénalités
-            if (emprunt.getPenalite() > 0) {
-                throw new EmpruntException.PenaliteExistanteException("Il y a une pénalité. Renouvellement impossible.");
-            }
+        empruntView.getRenouvelerButton().addActionListener(e -> {
+            int empruntId = empruntView.getSelectedEmpruntId();
+            try {
+				renouvelerEmprunt(empruntId);
+			} catch (EmpruntException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        });
 
-            // Vérification pour empêcher un renouvellement supplémentaire
-            if (emprunt.getNombreRenouvellements() >= 1) {
-                throw new EmpruntException.RenouvellementNonAutoriseException("Le renouvellement ne peut être effectué plus d'une fois.");
-            }
-
-            // Incrémenter le nombre de renouvellements
-            emprunt.setNombreRenouvellements(emprunt.getNombreRenouvellements() + 1);
-
-            // Définir une nouvelle date de retour prévue (par exemple, 14 jours après le renouvellement)
-            LocalDate nouvelleDateRetourPrevue = emprunt.getDateRetourPrevue().plusDays(14);
-            emprunt.setDateRetourPrevue(nouvelleDateRetourPrevue);
-
-            // Effectuer le renouvellement
-            empruntModel.updateEmprunt(emprunt);
-            JOptionPane.showMessageDialog(null, "Emprunt renouvelé avec succès.");
-            LOGGER.info("Emprunt renouvelé : " + empruntId);
-        } catch (EmpruntException e) {
-            LOGGER.warning(e.getMessage());
-            JOptionPane.showMessageDialog(null, e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            LOGGER.severe("Erreur inattendue : " + e.getMessage());
-            JOptionPane.showMessageDialog(null, "Erreur inattendue : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-        }
+        empruntView.getSupprimerButton().addActionListener(e -> {
+            int empruntId = empruntView.getSelectedEmpruntId();
+            supprimerEmprunt(empruntId);
+        });
     }
-
-    /**
-     * Retourne la liste de tous les emprunts.
-     *
-     * @return La liste de tous les emprunts.
-     */
     public List<Emprunt> listerEmprunts() {
-        return empruntModel.listerEmprunts();
+        return empruntModel.listerEmprunts(); // Utilise le DAO pour lister les emprunts
+    }
+    public <T> T getEntityById(String id, String entityType) {
+        switch (entityType) {
+            case "User":
+                return (T) userDAO.rechercherParID(id);
+            case "Livre":
+                return (T) livreDAO.rechercherParID(Integer.parseInt(id));
+            case "Emprunt":
+                return (T) empruntModel.getEmpruntById(Integer.parseInt(id));
+            default:
+                throw new IllegalArgumentException("Type d'entité inconnu : " + entityType);
+        }
     }
 
     public Emprunt getLastEmprunt() {
         List<Emprunt> emprunts = empruntModel.listerEmprunts();
         if (emprunts.isEmpty()) {
-            return null; // Aucun emprunt trouvé
+            return null; // Aucun emprunt
         }
-        // Retourner le dernier emprunt (en supposant que la liste est triée par ID ou date)
-        return emprunts.get(emprunts.size() - 1); // Dernier emprunt dans la liste
+        return emprunts.get(emprunts.size() - 1); // Retourne le dernier emprunt
     }
-    /**
-     * Récupère un emprunt par son ID.
-     *
-     * @param empruntId L'ID de l'emprunt à récupérer.
-     * @return L'emprunt correspondant à l'ID.
-     */
-   
+    public void chargerEmprunts(String filtre) {
+        List<Emprunt> emprunts = new ArrayList<>();
+
+        switch (filtre) {
+            case "Tous":
+                emprunts = this.listerEmprunts(); // Utilisez `this` pour référencer l'instance actuelle
+                break;
+            case "En cours":
+                emprunts = this.getEmpruntsEnCours();
+                break;
+            case "Historique":
+                emprunts = this.getHistoriqueEmprunts();
+                break;
+            // Ajoutez d'autres filtres si nécessaire
+        }
+        empruntView.updateEmpruntsTable(emprunts);
+    }
+
 }
