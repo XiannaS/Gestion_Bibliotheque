@@ -33,7 +33,7 @@ public class EmpruntView extends JPanel {
     
 public EmpruntView() {
     setLayout(new BorderLayout());
-    livreDAO = new LivreDAO(   "src/ressources/books.csv");  // Assurez-vous que le chemin est correct
+    livreDAO = new LivreDAO(   "src/resources/books.csv");  // Assurez-vous que le chemin est correct
 
     // Table des emprunts
     tableModel = new DefaultTableModel(new String[]{"ID", "Livre", "Utilisateur", "Date Emprunt", "Date Retour Prévue", "Retour Effective", "Rendu", "Pénalité"}, 0);
