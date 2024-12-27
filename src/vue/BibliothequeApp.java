@@ -33,22 +33,22 @@ public class BibliothequeApp extends JFrame {
         EmpruntView empruntView = new EmpruntView();
         // Chargement des contrôleurs et gestion des exceptions pour chaque
         try {
-            livreController = new LivreController("C:/Eclipse/gestionbibli/src/main/resources/ressources/books.csv");
+            livreController = new LivreController("src/resources/books.csv");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des livres : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
 
         try {
-            userController = new UserController("C:/Eclipse/gestionbibli/src/main/resources/ressources/users.csv");
+            userController = new UserController("src/resources/users.csv");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des utilisateurs : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
 
         try {
             empruntController = new EmpruntController(empruntView,
-                "C:/Eclipse/gestionbibli/src/main/resources/ressources/emprunt.csv",
-                "C:/Eclipse/gestionbibli/src/main/resources/ressources/books.csv",
-                "C:/Eclipse/gestionbibli/src/main/resources/ressources/users.csv"
+                "src/resources/emprunt.csv",
+                "src/resources/books.csv",
+                "src/resources/users.csv"
             );
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des emprunts : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
@@ -84,7 +84,7 @@ public class BibliothequeApp extends JFrame {
         headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));  // Alignement à droite pour les icônes
 
         // Icône de notification
-        ImageIcon notificationIcon = new ImageIcon(new ImageIcon("C:/Eclipse/gestionbibli/src/main/resources/ressources/notification.png")
+        ImageIcon notificationIcon = new ImageIcon(new ImageIcon("src/resources/notification.png")
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         notificationButton = new JButton(notificationIcon);
         notificationButton.setToolTipText("Notifications");
@@ -92,7 +92,7 @@ public class BibliothequeApp extends JFrame {
         headerPanel.add(notificationButton);
 
         // Icône de profil
-        ImageIcon profileIcon = new ImageIcon(new ImageIcon("C:/Eclipse/gestionbibli/src/main/resources/ressources/profile.png")
+        ImageIcon profileIcon = new ImageIcon(new ImageIcon("src/resources/profile.png")
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         profileButton = new JButton(profileIcon);
         profileButton.setToolTipText("Profil");
@@ -101,7 +101,7 @@ public class BibliothequeApp extends JFrame {
         headerPanel.add(profileButton);
 
         // Icône de bascule de thème
-        ImageIcon toggleThemeIcon = new ImageIcon(new ImageIcon("C:/Eclipse/gestionbibli/src/main/resources/ressources/mode.png")
+        ImageIcon toggleThemeIcon = new ImageIcon(new ImageIcon("src/resources/mode.png")
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         toggleThemeButton = new JButton(toggleThemeIcon);
         toggleThemeButton.setToolTipText("Basculer le thème");
