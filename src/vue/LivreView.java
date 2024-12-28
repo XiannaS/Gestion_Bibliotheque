@@ -164,30 +164,40 @@ public class LivreView extends JPanel {
     
 // Méthode pour afficher les détails du livre sélectionné
 	public void displayLivreDetails(Livre livre) {
-	    detailsPanel.removeAll(); // Vider les détails du livre précédent
+    detailsPanel.removeAll(); // Vider les détails du livre précédent
+
+    detailsPanel.add(new JLabel("Titre: " + livre.getTitre()));
+    detailsPanel.add(new JLabel("Auteur: " + livre.getAuteur()));
+    detailsPanel.add(new JLabel("Année: " + livre.getAnneePublication()));
+    detailsPanel.add(new JLabel("ISBN: " + livre.getIsbn()));
+    detailsPanel.add(new JLabel("Description: " + livre.getDescription()));
+    detailsPanel.add(new JLabel("Éditeur: " + livre.getEditeur()));
+    detailsPanel.add(new JLabel("Exemplaires restants: " + livre.getTotalExemplaires()));
+
+    // Panneau utilisateur pour champ ID et bouton emprunter
+    JPanel userIdPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    userIdPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+    JLabel userIdLabel = new JLabel("ID Utilisateur:");
+    userIdField = new JTextField();
+    userIdField.setColumns(10); // Largeur pour 10 caractères
+    userIdField.setMargin(new Insets(2, 2, 2, 2));
+
+    userIdPanel.add(userIdLabel);
+    userIdPanel.add(userIdField);
+    detailsPanel.add(userIdPanel);
+
+    // Ajouter le bouton Emprunter
+    borrowButton.setVisible(true); // Rendre le bouton visible
+    detailsPanel.add(Box.createVerticalStrut(10)); // Espacement
+    detailsPanel.add(borrowButton);
+
+    detailsPanel.revalidate();
+    detailsPanel.repaint();
+}
+
 	
-	    detailsPanel.add(new JLabel("Titre: " + livre .getTitre()));
-	    detailsPanel.add(new JLabel("Auteur: " + livre.getAuteur()));
-	    detailsPanel.add(new JLabel("Année: " + livre.getAnneePublication()));
-	    detailsPanel.add(new JLabel("ISBN: " + livre.getIsbn()));
-	    detailsPanel.add(new JLabel("Description: " + livre.getDescription()));
-	    detailsPanel.add(new JLabel("Éditeur: " + livre.getEditeur()));
-	    detailsPanel.add(new JLabel("Exemplaires restants: " + livre.getTotalExemplaires()));
-	
-	    // Afficher le champ ID utilisateur
-	    userIdField.setPreferredSize(new Dimension(100, 25)); // Définir une taille fixe pour le champ ID utilisateur
-	    userIdField.setVisible(true); // Rendre le champ visible
-	    detailsPanel.add(userIdField); // Ajouter le champ au panneau des détails
-	
-	    // Mettre à jour le bouton Emprunter pour qu'il soit activé lorsque les détails du livre sont affichés
-	    borrowButton.setPreferredSize(new Dimension(100, 30)); // Définir une taille fixe pour le bouton Emprunter
-	    borrowButton.setEnabled(true); // Activer le bouton Emprunter
-	    detailsPanel.add(borrowButton); // Ajouter le bouton Emprunter dans le panneau des détails
-	
-	    detailsPanel.revalidate();
-	    detailsPanel.repaint();
-	}
-	    // Méthode pour afficher le formulaire d'ajout d'un livre
+	// Méthode pour afficher le formulaire d'ajout d'un livre
     public void showAddLivreForm() {
         JDialog addLivreDialog = new JDialog();
         addLivreDialog.setTitle("Ajouter un Livre");
