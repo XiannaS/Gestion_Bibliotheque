@@ -9,6 +9,9 @@ import vue.LivreView;
 import exception.LivreException;
 
 import javax.swing.*;
+
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,11 +40,55 @@ public class LivreController {
         livreView.getAddButton().addActionListener(e -> showAddLivreForm());
     }
 
-    private void showAddLivreForm() {
-        // Appeler la méthode de la vue pour afficher le formulaire d'ajout
-        livreView.showAddLivreForm(this);
-    }
+    public void showAddLivreForm() {
+        JDialog addLivreDialog = new JDialog();
+        addLivreDialog.setTitle("Ajouter un Livre");
+        addLivreDialog.setSize(400, 300);
+        addLivreDialog.setLayout(new GridLayout(0, 2));
 
+        // Champs pour le formulaire d'ajout
+        JTextField titreField = new JTextField();
+        JTextField auteurField = new JTextField();
+        JTextField anneeField = new JTextField();
+        JTextField isbnField = new JTextField();
+        JTextField descriptionField = new JTextField();
+        JTextField editeurField = new JTextField();
+        JTextField totalExemplairesField = new JTextField();
+        
+        // Champ pour l'URL de l'image
+        JTextField imageField = new JTextField();
+        imageField.setEditable(false); // Rendre le champ non modifiable
+        JButton chooseImageButton = new JButton("Choisir une image");
+
+        // Panneau pour le champ d'image et le bouton
+        JPanel imagePanel = new JPanel(new FlowLayout());
+        imagePanel.add(imageField);
+        imagePanel.add(chooseImageButton);
+
+        // Ajout des champs au dialog
+        addLivreDialog.add(new JLabel("Titre:"));
+        addLivreDialog.add(titreField);
+        addLivreDialog.add(new JLabel("Auteur:"));
+        addLivreDialog.add(auteurField);
+        addLivreDialog.add(new JLabel("Année:"));
+        addLivreDialog.add(anneeField);
+        addLivreDialog.add(new JLabel("ISBN:"));
+        addLivreDialog.add(isbnField);
+        addLivreDialog.add(new JLabel("Description:"));
+        addLivreDialog.add(descriptionField);
+        addLivreDialog.add(new JLabel("Éditeur:"));
+        addLivreDialog.add(editeurField);
+        addLivreDialog.add(new JLabel("Total Exemplaires:"));
+        addLivreDialog.add(totalExemplairesField);
+        addLivreDialog.add(new JLabel("Image:"));
+        addLivreDialog.add(imagePanel); // Ajouter le panneau avec le champ et le bouton
+
+        // Bouton pour soumettre le formulaire
+        JButton submitButton = new JButton("Ajouter");
+        addLivreDialog.add(submitButton);
+
+        addLivreDialog.setVisible(true); // Afficher le dialogue
+    }
     public void addLivre(Livre newLivre) {
         try {
             livreDAO.addLivre(newLivre); // Méthode à implémenter dans LivreDAO
