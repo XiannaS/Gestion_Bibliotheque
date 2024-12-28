@@ -43,7 +43,7 @@ public class BibliothequeApp extends JFrame {
 
         // Initialisation des contrôleurs
         EmpruntController empruntController = new EmpruntController(empruntView, "src/resources/emprunt.csv", "src/resources/books.csv", "src/resources/users.csv");
-        LivreController livreController = new LivreController(livreView, livreDAO, userDAO, empruntDAO);
+        LivreController livreController = new LivreController(livreView, livreDAO);
 
         // Créer le panneau d'onglets
         tabbedPane = new JTabbedPane();

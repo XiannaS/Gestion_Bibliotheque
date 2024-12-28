@@ -94,7 +94,7 @@ public class EmpruntController {
         livre.emprunter();
         livreDAO.updateLivre(livre); 
         chargerEmprunts("Tous");
-        showMessage("Livre emprunté avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
+        showMessage("Livre emprunté avec suc cès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
