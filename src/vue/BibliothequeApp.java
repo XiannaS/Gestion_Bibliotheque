@@ -38,12 +38,15 @@ public class BibliothequeApp extends JFrame {
         EmpruntDAO empruntDAO = new EmpruntDAO("src/resources/emprunt.csv");
 
         // Initialisation des vues
-        LivreView livreView = new LivreView();
+        LivreView livreView = new LivreView();  // Création sans contrôleur
         EmpruntView empruntView = new EmpruntView();
 
         // Initialisation des contrôleurs
         EmpruntController empruntController = new EmpruntController(empruntView, "src/resources/emprunt.csv", "src/resources/books.csv", "src/resources/users.csv");
-        LivreController livreController = new LivreController(livreView, livreDAO);
+        LivreController livreController = new LivreController(livreView, livreDAO);  // Création du contrôleur avec la vue et le DAO
+
+        // Injecter livreController dans livreView après sa création
+        livreView.setLivreController(livreController); 
 
         // Créer le panneau d'onglets
         tabbedPane = new JTabbedPane();

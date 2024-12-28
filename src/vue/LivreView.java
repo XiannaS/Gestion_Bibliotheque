@@ -13,6 +13,7 @@ import java.util.List;
  
 
 public class LivreView extends JPanel {
+	 private LivreController livreController; 
     private JTextField searchField;
     private JComboBox<String> criteriaComboBox;
     private JCheckBox disponibleCheckBox;
@@ -34,8 +35,21 @@ public class LivreView extends JPanel {
     private JTextField genreField;
     private JButton addFormSubmitButton; // Déclaration du bouton pour soumettre le formulaire
     private JButton chooseImageButton;
+    private JButton editFormSubmitButton; // Déclaration du bouton pour soumettre le formulaire de modification
+   
     public LivreView() {
-        initUI(); // Initialiser l'interface utilisateur
+        // Initialisation des composants graphiques ici (ex: boutons, labels, etc.)
+    	 initUI(); 
+    }
+    
+    public LivreView(LivreController livreController  ) {
+    	 this.livreController =livreController;
+        
+       // Initialiser l'interface utilisateur
+    }
+    // Setter pour injecter livreController après la création de l'objet
+    public void setLivreController(LivreController livreController) {
+        this.livreController = livreController;
     }
 
     private void initUI() {
@@ -57,7 +71,7 @@ public class LivreView extends JPanel {
         // Barre de recherche
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         searchField = new JTextField(20);
-        criteriaComboBox = new JComboBox<>(new String[]{"Titre", "Auteur", "Année", "ISBN"});
+        criteriaComboBox = new JComboBox<>(new String[]{"Titre", "Auteur", "iAnnée", "ISBN"});
         disponibleCheckBox = new JCheckBox("Disponible");
         searchButton = new JButton("Rechercher");
 
@@ -107,106 +121,206 @@ public class LivreView extends JPanel {
         genreField = new JTextField(); 
     }
 
- public void showAddLivreForm() {
-    JDialog addLivreDialog = new JDialog();
-    addLivreDialog.setTitle("Ajouter un Livre");
-    addLivreDialog.setSize(500, 400);
-    addLivreDialog.setLayout(new GridBagLayout());
-    addLivreDialog.setLocationRelativeTo(null); // Centrer le dialogue
-
-    GridBagConstraints gbc = new GridBagConstraints();
-    gbc.insets = new Insets(5, 5, 5, 5); // Espacement autour des composants
-    gbc.fill = GridBagConstraints.HORIZONTAL;
-    gbc.anchor = GridBagConstraints.WEST;
-
-    // Ligne 1 : Titre
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    addLivreDialog.add(new JLabel("Titre:"), gbc);
-    gbc.gridx = 1;
-    addLivreDialog.add(titreField, gbc); // Utiliser le champ de texte de la classe
-
-    // Ligne 2 : Auteur
-    gbc.gridx = 0;
-    gbc.gridy = 1;
-    addLivreDialog.add(new JLabel("Auteur:"), gbc);
-    gbc.gridx = 1;
-    addLivreDialog.add(auteurField, gbc); // Utiliser le champ de texte de la classe
-    // Ligne 3 : Genre
-    gbc.gridx = 0;
-    gbc.gridy = 2;
-    addLivreDialog.add(new JLabel("Genre:"), gbc);
-    gbc.gridx = 1;
-    String[] genres = {"Fiction", "Non-Fiction", "Science", "Fantasy", "Biography"};
-    JComboBox<String> genreComboBox = new JComboBox<>(genres); // Créer le JComboBox pour le genre
-    addLivreDialog.add(genreComboBox, gbc); // Ajouter le JComboBox au dialogue
-
-
-    // Ligne 4 : Année
-    gbc.gridx = 0;
-    gbc.gridy = 3;
-    addLivreDialog.add(new JLabel("Année:"), gbc);
-    gbc.gridx = 1;
-    addLivreDialog.add(anneeField, gbc); // Utiliser le champ de texte de la classe
-
-    // Ligne 5 : ISBN
-    gbc.gridx = 0;
-    gbc.gridy = 4;
-    addLivreDialog.add(new JLabel("ISBN:"), gbc);
-    gbc.gridx = 1;
-    addLivreDialog.add(isbnField, gbc); // Utiliser le champ de texte de la classe
-
-    // Ligne 6 : Description
-    gbc.gridx = 0;
-    gbc.gridy = 5;
-    addLivreDialog.add(new JLabel("Description:"), gbc);
-    gbc.gridx = 1;
-    addLivreDialog.add(descriptionField, gbc); // Utiliser le champ de texte de la classe
-
-    // Ligne 7 : Éditeur
-    gbc.gridx = 0;
-    gbc.gridy = 6;
-    addLivreDialog.add(new JLabel("Éditeur:"), gbc);
-    gbc.gridx = 1;
-    addLivreDialog.add(editeurField, gbc); // Utiliser le champ de texte de la classe
-
-    // Ligne 8 : Total Exemplaires
-    gbc.gridx = 0;
-    gbc.gridy = 7;
-    addLivreDialog.add(new JLabel("Total Exemplaires:"), gbc);
-    gbc.gridx = 1;
-    addLivreDialog.add(totalExemplairesField, gbc); // Utiliser le champ de texte de la classe
-
-    // Ligne 9 : Image
-    gbc.gridx = 0;
-    gbc.gridy = 8;
-    addLivreDialog.add(new JLabel("Image:"), gbc);
-    gbc.gridx = 1;
-    addLivreDialog.add(imageField, gbc); // Utiliser le champ de texte de la classe
-
-    // Ligne 10 : Choisir Image Button
-    gbc.gridx = 1;
-    gbc.gridy = 9;
-    JButton chooseImageButton = new JButton("Choisir Image");
-    addLivreDialog.add(chooseImageButton, gbc);
-
-    // Ligne 11 : Submit Button
-    gbc.gridx = 0;
-    gbc.gridy = 10;
-    gbc.gridwidth = 2;
-    gbc.anchor = GridBagConstraints.CENTER;
-    addFormSubmitButton = new JButton("Ajouter");
-    addLivreDialog.add(addFormSubmitButton, gbc);
-
-    // Show the dialog
-    addLivreDialog.setVisible(true);
-}
-    public JButton getChooseImageButton() {
-        return chooseImageButton; // Assurez-vous que chooseImageButton est un champ de classe
-    }
-    public JButton getAddFormSubmitButton() {
-        return addFormSubmitButton; // Retourner le bouton pour l'ajout
-    }
+	public void showEditLivreForm(Livre livre) {
+	    JDialog editLivreDialog = new JDialog();
+	    editLivreDialog.setTitle("Modifier un Livre");
+	    editLivreDialog.setSize(500, 400);
+	    editLivreDialog.setLayout(new GridBagLayout());
+	    editLivreDialog.setLocationRelativeTo(null); // Centrer le dialogue
+	
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    gbc.insets = new Insets(5, 5, 5, 5); // Espacement autour des composants
+	    gbc.fill = GridBagConstraints.HORIZONTAL;
+	    gbc.anchor = GridBagConstraints.WEST;
+	
+	    // Ligne 1 : Titre
+	    gbc.gridx = 0;
+	    gbc.gridy = 0;
+	    editLivreDialog.add(new JLabel("Titre:"), gbc);
+	    gbc.gridx = 1;
+	    titreField.setText(livre.getTitre()); // Remplir le champ avec le titre existant
+	    editLivreDialog.add(titreField, gbc);
+	
+	    // Ligne 2 : Auteur
+	    gbc.gridx = 0;
+	    gbc.gridy = 1;
+	    editLivreDialog.add(new JLabel("Auteur:"), gbc);
+	    gbc.gridx = 1;
+	    auteurField.setText(livre.getAuteur()); // Remplir le champ avec l'auteur existant
+	    editLivreDialog.add(auteurField, gbc);
+	
+	    // Ligne 3 : Genre
+	    gbc.gridx = 0;
+	    gbc.gridy = 2;
+	    editLivreDialog.add(new JLabel("Genre:"), gbc);
+	    gbc.gridx = 1;
+	    String[] genres = {"Fiction", "Non-Fiction", "Science", "Fantasy", "Biography"};
+	    JComboBox<String> genreComboBox = new JComboBox<>(genres);
+	    genreComboBox.setSelectedItem(livre.getGenre()); // Sélectionner le genre existant
+	    editLivreDialog.add(genreComboBox, gbc);
+	
+	    // Ligne 4 : Année
+	    gbc.gridx = 0;
+	    gbc.gridy = 3;
+	    editLivreDialog.add(new JLabel("Année:"), gbc);
+	    gbc.gridx = 1;
+	    anneeField.setText(String.valueOf(livre.getAnneePublication())); // Remplir le champ avec l'année existante
+	    editLivreDialog.add(anneeField, gbc);
+	
+	    // Ligne 5 : ISBN
+	    gbc.gridx = 0;
+	    gbc.gridy = 4;
+	    editLivreDialog.add(new JLabel("ISBN:"), gbc);
+	    gbc.gridx = 1;
+	    isbnField.setText(livre.getIsbn()); // Remplir le champ avec l'ISBN existant
+	    editLivreDialog.add(isbnField, gbc);
+	
+	    // Ligne 6 : Description
+	    gbc.gridx = 0;
+	    gbc.gridy = 5;
+	    editLivreDialog.add(new JLabel("Description:"), gbc);
+	    gbc.gridx = 1;
+	    descriptionField.setText(livre.getDescription()); // Remplir le champ avec la description existante
+	    editLivreDialog.add(descriptionField, gbc);
+	
+	    // Ligne 7 : Éditeur
+	    gbc.gridx = 0;
+	    gbc.gridy = 6;
+	    editLivreDialog.add(new JLabel("Éditeur:"), gbc);
+	    gbc.gridx = 1;
+	    editeurField.setText(livre.getEditeur()); // Remplir le champ avec l'éditeur existant
+	    editLivreDialog.add(editeurField, gbc);
+	
+	    // Ligne 8 : Total Exemplaires
+	    gbc.gridx = 0;
+	    gbc.gridy = 7;
+	    editLivreDialog.add(new JLabel("Total Exemplaires:"), gbc);
+	    gbc.gridx = 1;
+	    totalExemplairesField.setText(String.valueOf(livre.getTotalExemplaires())); // Remplir le champ avec le total existant
+	    editLivreDialog.add(totalExemplairesField, gbc);
+	
+	    // Ligne 9 : Image
+	    gbc.gridx = 0;
+	    gbc.gridy = 8;
+	    editLivreDialog.add(new JLabel("Image:"), gbc);
+	    gbc.gridx = 1;
+	    imageField.setText(livre.getImageUrl()); // Remplir le champ avec l'URL de l'image existante
+	    editLivreDialog.add(imageField, gbc);
+	
+	    // Ligne 10 : Choisir Image Button
+	    gbc.gridx = 1;
+	    gbc.gridy = 9;
+	    JButton chooseImageButton = new JButton("Choisir Image");
+	    editLivreDialog.add(chooseImageButton, gbc);
+	
+	    // Ligne 11 : Submit Button
+	    gbc.gridx = 0;
+	    gbc.gridy = 10;
+	    gbc.gridwidth = 2;
+	    gbc.anchor = GridBagConstraints.CENTER;
+	    JButton editFormSubmitButton = new JButton("Modifier");
+	    editLivreDialog.add(editFormSubmitButton, gbc);
+	
+	    // Afficher le dialogue
+	    editLivreDialog.setVisible(true);
+	}
+	
+    
+	 public void showAddLivreForm() {
+	    JDialog addLivreDialog = new JDialog();
+	    addLivreDialog.setTitle("Ajouter un Livre");
+	    addLivreDialog.setSize(500, 400);
+	    addLivreDialog.setLayout(new GridBagLayout());
+	    addLivreDialog.setLocationRelativeTo(null); // Centrer le dialogue
+	
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    gbc.insets = new Insets(5, 5, 5, 5); // Espacement autour des composants
+	    gbc.fill = GridBagConstraints.HORIZONTAL;
+	    gbc.anchor = GridBagConstraints.WEST;
+	
+	    // Ligne 1 : Titre
+	    gbc.gridx = 0;
+	    gbc.gridy = 0;
+	    addLivreDialog.add(new JLabel("Titre:"), gbc);
+	    gbc.gridx = 1;
+	    addLivreDialog.add(titreField, gbc); // Utiliser le champ de texte de la classe
+	
+	    // Ligne 2 : Auteur
+	    gbc.gridx = 0;
+	    gbc.gridy = 1;
+	    addLivreDialog.add(new JLabel("Auteur:"), gbc);
+	    gbc.gridx = 1;
+	    addLivreDialog.add(auteurField, gbc); // Utiliser le champ de texte de la classe
+	    // Ligne 3 : Genre
+	    gbc.gridx = 0;
+	    gbc.gridy = 2;
+	    addLivreDialog.add(new JLabel("Genre:"), gbc);
+	    gbc.gridx = 1;
+	    String[] genres = {"Fiction", "Non-Fiction", "Science", "Fantasy", "Biography"};
+	    JComboBox<String> genreComboBox = new JComboBox<>(genres); // Créer le JComboBox pour le genre
+	    addLivreDialog.add(genreComboBox, gbc); // Ajouter le JComboBox au dialogue
+	
+	
+	    // Ligne 4 : Année
+	    gbc.gridx = 0;
+	    gbc.gridy = 3;
+	    addLivreDialog.add(new JLabel("Année:"), gbc);
+	    gbc.gridx = 1;
+	    addLivreDialog.add(anneeField, gbc); // Utiliser le champ de texte de la classe
+	
+	    // Ligne 5 : ISBN
+	    gbc.gridx = 0;
+	    gbc.gridy = 4;
+	    addLivreDialog.add(new JLabel("ISBN:"), gbc);
+	    gbc.gridx = 1;
+	    addLivreDialog.add(isbnField, gbc); // Utiliser le champ de texte de la classe
+	
+	    // Ligne 6 : Description
+	    gbc.gridx = 0;
+	    gbc.gridy = 5;
+	    addLivreDialog.add(new JLabel("Description:"), gbc);
+	    gbc.gridx = 1;
+	    addLivreDialog.add(descriptionField, gbc); // Utiliser le champ de texte de la classe
+	
+	    // Ligne 7 : Éditeur
+	    gbc.gridx = 0;
+	    gbc.gridy = 6;
+	    addLivreDialog.add(new JLabel("Éditeur:"), gbc);
+	    gbc.gridx = 1;
+	    addLivreDialog.add(editeurField, gbc); // Utiliser le champ de texte de la classe
+	
+	    // Ligne 8 : Total Exemplaires
+	    gbc.gridx = 0;
+	    gbc.gridy = 7;
+	    addLivreDialog.add(new JLabel("Total Exemplaires:"), gbc);
+	    gbc.gridx = 1;
+	    addLivreDialog.add(totalExemplairesField, gbc); // Utiliser le champ de texte de la classe
+	
+	    // Ligne 9 : Image
+	    gbc.gridx = 0;
+	    gbc.gridy = 8;
+	    addLivreDialog.add(new JLabel("Image:"), gbc);
+	    gbc.gridx = 1;
+	    addLivreDialog.add(imageField, gbc); // Utiliser le champ de texte de la classe
+	
+	    // Ligne 10 : Choisir Image Button
+	    gbc.gridx = 1;
+	    gbc.gridy = 9;
+	    JButton chooseImageButton = new JButton("Choisir Image");
+	    addLivreDialog.add(chooseImageButton, gbc);
+	
+	    // Ligne 11 : Submit Button
+	    gbc.gridx = 0;
+	    gbc.gridy = 10;
+	    gbc.gridwidth = 2;
+	    gbc.anchor = GridBagConstraints.CENTER;
+	    addFormSubmitButton = new JButton("Ajouter");
+	    addLivreDialog.add(addFormSubmitButton, gbc);
+	
+	    // Show the dialog
+	    addLivreDialog.setVisible(true);
+	}
+	 
     
     // Méthode pour afficher la liste des livres
     public void displayBooks(List<Livre> livres) {
@@ -219,51 +333,52 @@ public class LivreView extends JPanel {
         popularPanel.repaint(); // Repeindre le panneau
     }
 
-    
-    private JPanel createLivrePanel(Livre livre) {
-        JPanel livrePanel = new JPanel();
-        livrePanel.setLayout(new BoxLayout(livrePanel, BoxLayout.Y_AXIS));
-        livrePanel.setBackground(new Color(0, 0, 0, 0)); // Fond transparent
+private JPanel createLivrePanel(Livre livre) {
+    JPanel livrePanel = new JPanel();
+    livrePanel.setLayout(new BoxLayout(livrePanel, BoxLayout.Y_AXIS));
+    livrePanel.setBackground(new Color(0, 0, 0, 0)); // Fond transparent
 
-        // Créer l'image de couverture
-        ImageIcon imageIcon = new ImageIcon(livre.getImageUrl());
-        if (imageIcon.getIconWidth() == -1) {
-            imageIcon = new ImageIcon("src/resources/default-book.jpeg");
-        }
-        
-        // Redimensionner l'image de couverture
-        imageIcon = resizeIcon(imageIcon, 150, 200); // Redimensionner à 150x200 pixels
-        JLabel imageLabel = new JLabel(imageIcon);
-        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Ajouter le titre du livre en italique
-        JLabel titleLabel = new JLabel(livre.getTitre());
-        titleLabel.setFont(titleLabel.getFont().deriveFont(Font.ITALIC)); // Titre en italique
-        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        livrePanel.add(imageLabel);
-        livrePanel.add(titleLabel);
-        editButton.setIcon(resizeIcon(createIcon("src/resources/edit-icon.png"), 20, 20)); // Redimensionner à 30x30 pixels
-        deleteButton.setIcon(resizeIcon(createIcon("src/resources/delete-icon.png"), 20, 20)); // Redimensionner à 30x30 pixels
-
-        editButton = new JButton("Modifier");
-        deleteButton = new JButton("Supprimer");
-        // Panneau pour les boutons "Modifier" et "Supprimer"
-        
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(editButton);
-        buttonPanel.add(deleteButton);
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER)); // Disposition centrée
-        buttonPanel.setBackground(new Color(0, 0, 0, 0)); // Fond transparent pour le panneau des boutons
-
-
-  
-        // Ajouter le panneau des boutons au panneau du livre
-        livrePanel.add(buttonPanel);
-
-        
-        return livrePanel;
+    // Créer l'image de couverture
+    ImageIcon imageIcon = new ImageIcon(livre.getImageUrl());
+    if (imageIcon.getIconWidth() == -1) {
+        imageIcon = new ImageIcon("src/resources/default-book.jpeg");
     }
+    imageIcon = resizeIcon(imageIcon, 150, 200); // Redimensionner à 150x200 pixels
+    JLabel imageLabel = new JLabel(imageIcon);
+    imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+    // Ajouter le titre du livre en italique
+    JLabel titleLabel = new JLabel(livre.getTitre());
+    titleLabel.setFont(titleLabel.getFont().deriveFont(Font.ITALIC)); // Titre en italique
+    titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+    livrePanel.add(imageLabel);
+    livrePanel.add(titleLabel);
+
+    // Créer les boutons "Modifier" et "Supprimer"
+    JButton editButton = new JButton("Modifier");
+    JButton deleteButton = new JButton("Supprimer");
+
+    // Ajouter les boutons au panneau
+    JPanel buttonPanel = new JPanel();
+    buttonPanel.add(editButton);
+    buttonPanel.add(deleteButton);
+    livrePanel.add(buttonPanel);
+
+    // Ajouter les listeners pour les boutons
+    editButton.addActionListener(e -> livreController.editLivre(livre)); // Appeler la méthode pour modifier le livre
+    deleteButton.addActionListener(e -> {
+        int confirmation = JOptionPane.showConfirmDialog(null, 
+            "Êtes-vous sûr de vouloir supprimer ce livre ?", 
+            "Confirmation de suppression", 
+            JOptionPane.YES_NO_OPTION);
+        if (confirmation == JOptionPane.YES_OPTION) {
+            livreController.deleteLivre(livre); // Appeler la méthode pour supprimer le livre
+        }
+    });
+
+    return livrePanel;
+}
     
 // Méthode pour afficher les détails du livre sélectionné
 	public void displayLivreDetails(Livre livre) {
@@ -301,50 +416,8 @@ public class LivreView extends JPanel {
     detailsPanel.repaint(); // Repeindre le panneau
 }
  
- 
-	public void showEditLivreForm(Livre livre) {
-	    JDialog editLivreDialog = new JDialog();
-	    editLivreDialog.setTitle("Modifier un Livre");
-	    editLivreDialog.setSize(400, 300);
-	    editLivreDialog.setLayout(new GridLayout(0, 2));
-	
-	    // Champs pour le formulaire de modification
-	    JTextField titreField = new JTextField(livre.getTitre());
-	    JTextField auteurField = new JTextField(livre.getAuteur());
-	    JTextField anneeField = new JTextField(String.valueOf(livre.getAnneePublication()));
-	    JTextField isbnField = new JTextField(livre.getIsbn());
-	    JTextField descriptionField = new JTextField(livre.getDescription());
-	    JTextField editeurField = new JTextField(livre.getEditeur());
-	    JTextField totalExemplairesField = new JTextField(String.valueOf(livre.getTotalExemplaires()));
-	    JTextField imageField = new JTextField(livre.getImageUrl());
-	
-	    // Ajout des champs au dialog
-	    editLivreDialog.add(new JLabel("Titre:"));
-	    editLivreDialog.add(titreField);
-	    editLivreDialog.add(new JLabel("Auteur:"));
-	    editLivreDialog.add(auteurField);
-	    editLivreDialog.add(new JLabel("Année:"));
-	    editLivreDialog.add(anneeField);
-	    editLivreDialog.add(new JLabel("ISBN:"));
-	    editLivreDialog.add(isbnField);
-	    editLivreDialog.add(new JLabel("Description:"));
-	    editLivreDialog.add(descriptionField);
-	    editLivreDialog.add(new JLabel("Éditeur:"));
-	    editLivreDialog.add(editeurField);
-	    editLivreDialog.add(new JLabel("Total Exemplaires:"));
-	    editLivreDialog.add(totalExemplairesField);
-	    editLivreDialog.add(new JLabel("Image:"));
-	    editLivreDialog.add(imageField);
-	
-	    // Bouton pour soumettre le formulaire
-	    JButton submitButton = new JButton("Modifier");
-	    editLivreDialog.add(submitButton);
-	
-	     
-	    editLivreDialog.setVisible(true); // Afficher le dialogue
-	}
 	 
-	
+
 	// Getters pour récupérer les valeurs des champs
 	
 	public JTextField getGenreField() {
@@ -386,7 +459,7 @@ public class LivreView extends JPanel {
 	        return imageField.getText();
 	    }
 	
-	
+	// pour les images
     private ImageIcon createIcon(String path) {
         return new ImageIcon(path); // Crée l'icône à partir du chemin de l'image
     }
@@ -411,6 +484,8 @@ public class LivreView extends JPanel {
         return new ImageIcon(resizedImage);
     }
 
+    
+    // getters 
     public JTextField getSearchField() {
         return searchField;
     }
@@ -513,6 +588,17 @@ public class LivreView extends JPanel {
     public void clearEditLivreForm() {
         System.out.println("Formulaire d'édition réinitialisé.");
     }
+	 public JButton getChooseImageButton() {
+	        return chooseImageButton; // Assurez-vous que chooseImageButton est un champ de classe
+ }
+ public JButton getAddFormSubmitButton() {
+     return addFormSubmitButton; // Retourner le bouton pour l'ajout
+ }
 
- 
+ public JButton getEditFormSubmitButton() {
+	    return editFormSubmitButton; // Retourner le bouton de soumission du formulaire de modification
+	}
+ public void setController(LivreController livreController) {
+	    this.livreController = livreController; // Initialiser le contrôleur
+	}
 }
