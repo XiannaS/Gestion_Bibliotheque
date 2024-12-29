@@ -333,53 +333,43 @@ public class LivreView extends JPanel {
         popularPanel.repaint(); // Repeindre le panneau
     }
 
-private JPanel createLivrePanel(Livre livre) {
-    JPanel livrePanel = new JPanel();
-    livrePanel.setLayout(new BoxLayout(livrePanel, BoxLayout.Y_AXIS));
-    livrePanel.setBackground(new Color(0, 0, 0, 0)); // Fond transparent
+	public JPanel createLivrePanel(Livre livre) {
+	    JPanel livrePanel = new JPanel();
+	    livrePanel.setLayout(new BoxLayout(livrePanel, BoxLayout.Y_AXIS));
+	    livrePanel.setBackground(new Color(0, 0, 0, 0)); // Fond transparent
+	
+	    // Créer l'image de couverture
+	    ImageIcon imageIcon = new ImageIcon(livre.getImageUrl());
+	    if (imageIcon.getIconWidth() == -1) {
+	        imageIcon = new ImageIcon("src/resources/default-book.jpeg");
+	    }
+	    imageIcon = resizeIcon(imageIcon, 150, 200); // Redimensionner à 150x200 pixels
+	    JLabel imageLabel = new JLabel(imageIcon);
+	    imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+	
+	    // Ajouter le titre du livre en italique
+	    JLabel titleLabel = new JLabel(livre.getTitre());
+	    titleLabel.setFont(titleLabel.getFont().deriveFont(Font.ITALIC)); // Titre en italique
+	    titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+	
+	    livrePanel.add(imageLabel);
+	    livrePanel.add(titleLabel);
+	
+	    // Créer les boutons "Modifier" et "Supprimer"
+	    JButton editButton = new JButton("Modifier");
+	    JButton deleteButton = new JButton("Supprimer");
+	
+	    // Ajouter les boutons au panneau
+	    JPanel buttonPanel = new JPanel();
+	    buttonPanel.add(editButton);
+	    buttonPanel.add(deleteButton);
+	    livrePanel.add(buttonPanel);
+	
+	    
 
-    // Créer l'image de couverture
-    ImageIcon imageIcon = new ImageIcon(livre.getImageUrl());
-    if (imageIcon.getIconWidth() == -1) {
-        imageIcon = new ImageIcon("src/resources/default-book.jpeg");
-    }
-    imageIcon = resizeIcon(imageIcon, 150, 200); // Redimensionner à 150x200 pixels
-    JLabel imageLabel = new JLabel(imageIcon);
-    imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-    // Ajouter le titre du livre en italique
-    JLabel titleLabel = new JLabel(livre.getTitre());
-    titleLabel.setFont(titleLabel.getFont().deriveFont(Font.ITALIC)); // Titre en italique
-    titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-    livrePanel.add(imageLabel);
-    livrePanel.add(titleLabel);
-
-    // Créer les boutons "Modifier" et "Supprimer"
-    JButton editButton = new JButton("Modifier");
-    JButton deleteButton = new JButton("Supprimer");
-
-    // Ajouter les boutons au panneau
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.add(editButton);
-    buttonPanel.add(deleteButton);
-    livrePanel.add(buttonPanel);
-
-    // Ajouter les listeners pour les boutons
-    editButton.addActionListener(e -> livreController.editLivre(livre)); // Appeler la méthode pour modifier le livre
-    deleteButton.addActionListener(e -> {
-        int confirmation = JOptionPane.showConfirmDialog(null, 
-            "Êtes-vous sûr de vouloir supprimer ce livre ?", 
-            "Confirmation de suppression", 
-            JOptionPane.YES_NO_OPTION);
-        if (confirmation == JOptionPane.YES_OPTION) {
-            livreController.deleteLivre(livre); // Appeler la méthode pour supprimer le livre
-        }
-    });
-
-    return livrePanel;
-}
-    
+	    return livrePanel;
+	}
+	    
 // Méthode pour afficher les détails du livre sélectionné
 	public void displayLivreDetails(Livre livre) {
     detailsPanel.removeAll(); // Vider les détails du livre précédent
