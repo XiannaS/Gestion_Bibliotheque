@@ -10,12 +10,9 @@ import org.junit.Test;
 import controllers.EmpruntController;
 import exception.EmpruntException;
 import model.Emprunt;
-import model.EmpruntDAO;
 import model.Livre;
-import model.LivreDAO;
 import model.Role;
 import model.User;
-import model.UserDAO;
 import vue.EmpruntView;
 
 public class EmpruntControllerTest {

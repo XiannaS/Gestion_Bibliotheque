@@ -122,4 +122,14 @@ public class LivreDAO {
                 .orElse(0); // Si la liste est vide, le max sera 0
         return maxId + 1; // L'ID suivant sera l'ID max + 1
     }
+    public boolean livreExists(String isbn) {
+        List<Livre> livres = getAllLivres();
+        for (Livre livre : livres) {
+            if (livre.getIsbn().equals(isbn)) {
+                return true; // Retourne true si un livre avec cet ISBN existe
+            }
+        }
+        return false; // Retourne false si aucun livre n'est trouvé
+    }
+ 
 }

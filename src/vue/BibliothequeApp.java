@@ -8,6 +8,7 @@ import model.UserDAO;
 import model.EmpruntDAO;
 
 import javax.swing.*;
+import javax.swing.UIManager.*;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.intellijthemes.FlatDraculaIJTheme;
@@ -22,7 +23,7 @@ public class BibliothequeApp extends JFrame {
     private JButton profileButton;
     private JButton notificationButton;
     private JLabel welcomeLabel;
-    private boolean isDarkMode = true;
+    private boolean isDarkMode = false; // Commencer avec le mode clair
 
     // Constructeur de la classe BibliothequeApp
     public BibliothequeApp() {
@@ -37,15 +38,17 @@ public class BibliothequeApp extends JFrame {
         EmpruntDAO empruntDAO = new EmpruntDAO("src/resources/emprunt.csv");
 
         // Initialisation des vues
-        LivreView livreView = new LivreView();
+        LivreView livreView = new LivreView();  // Création sans contrôleur
         EmpruntView empruntView = new EmpruntView();
 
         // Initialisation des contrôleurs
         EmpruntController empruntController = new EmpruntController(empruntView, "src/resources/emprunt.csv", "src/resources/books.csv", "src/resources/users.csv");
-     // Appel du constructeur sans EmpruntController
-        LivreController livreController = new LivreController(livreView, livreDAO, userDAO, empruntDAO);
+        LivreController livreController = new LivreController(livreView, livreDAO);  // Création du contrôleur avec la vue et le DAO
 
-        // Création du panneau d'onglets
+        // Injecter livreController dans livreView après sa création
+        livreView.setLivreController(livreController); 
+
+        // Créer le panneau d'onglets
         tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Livres", livreView);
         tabbedPane.addTab("Emprunts", empruntView);
@@ -53,9 +56,9 @@ public class BibliothequeApp extends JFrame {
         // Ajouter le panneau d'onglets à la fenêtre principale
         add(tabbedPane, BorderLayout.CENTER);
 
-        // Créer un JPanel pour le header avec des icônes
+        // Créer un JPanel pour l'entête avec des icônes
         JPanel headerPanel = new JPanel();
-        headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));  // Alignement à droite pour les icônes
+        headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT)); // Alignement à droite pour les icônes
 
         // Icône de notification
         ImageIcon notificationIcon = new ImageIcon(new ImageIcon("src/resources/notification.png")
@@ -84,8 +87,8 @@ public class BibliothequeApp extends JFrame {
         welcomeLabel = new JLabel("Bienvenue, Nom Utilisateur !");
         headerPanel.add(welcomeLabel);
 
-        // Ajouter le header dans la fenêtre principale
-        add(headerPanel, BorderLayout.NORTH); // Ajouter le header en haut
+        // Ajouter l'entête dans la fenêtre principale
+        add(headerPanel, BorderLayout.NORTH); // Ajouter l'entête en haut
     }
 
     private void onProfileClicked(ActionEvent event) {
@@ -95,22 +98,30 @@ public class BibliothequeApp extends JFrame {
     private void toggleTheme(ActionEvent event) {
         if (isDarkMode) {
             try {
-                UIManager.setLookAndFeel(new FlatLightLaf());
+                UIManager.setLookAndFeel(new FlatLightLaf()); // Mode clair
             } catch (UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                UIManager.setLookAndFeel(new FlatDraculaIJTheme());
+                UIManager.setLookAndFeel(new FlatDraculaIJTheme()); // Mode sombre
             } catch (UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
             }
         }
-        SwingUtilities.updateComponentTreeUI(this);
-        isDarkMode = !isDarkMode;
+        SwingUtilities.updateComponentTreeUI(this); // Rafraîchir l'interface
+        isDarkMode = !isDarkMode; // Basculer le mode
     }
 
     public static void main(String[] args) {
+        // Appliquer FlatLaf par défaut
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf()); // Thème clair par défaut
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+
+        // Lancer l'application
         SwingUtilities.invokeLater(() -> {
             new BibliothequeApp().setVisible(true);
         });

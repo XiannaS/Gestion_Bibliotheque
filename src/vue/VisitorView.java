@@ -17,7 +17,7 @@ public class VisitorView extends JFrame {
     private JComboBox<String> searchCriteriaComboBox;
 
     public VisitorView(BibliothequeApp app) {
-        livreController = new LivreController("src/ressources/books.csv");
+        livreController = new LivreController(null, null);
         setTitle("Livres Disponibles");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 600);
