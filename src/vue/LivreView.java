@@ -36,7 +36,7 @@ public class LivreView extends JPanel {
     private JButton addFormSubmitButton; // Déclaration du bouton pour soumettre le formulaire
     private JButton chooseImageButton;
     private JButton editFormSubmitButton; // Déclaration du bouton pour soumettre le formulaire de modification
-   
+    private JDialog editLivreDialog; // Add this line to your LivreView class
     public LivreView() {
         // Initialisation des composants graphiques ici (ex: boutons, labels, etc.)
     	 initUI(); 
@@ -44,7 +44,7 @@ public class LivreView extends JPanel {
     
     public LivreView(LivreController livreController  ) {
     	 this.livreController =livreController;
-        
+        initUI();
        // Initialiser l'interface utilisateur
     }
     // Setter pour injecter livreController après la création de l'objet
@@ -54,7 +54,10 @@ public class LivreView extends JPanel {
 
     private void initUI() {
         setLayout(new BorderLayout());
+        
+        
 
+        
         // Initialiser le panneau des détails
         detailsPanel = new JPanel();
         detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
@@ -99,8 +102,8 @@ public class LivreView extends JPanel {
         
         // Initialiser le bouton "Emprunter"
         borrowButton = new JButton("Emprunter");
-        borrowButton.setEnabled(false); // Désactiver le bouton au début
-        borrowButton.setVisible(false); // Masquer le bouton au début
+     //   borrowButton.setEnabled(false); // Désactiver le bouton au début
+       // borrowButton.setVisible(false); // Masquer le bouton au début
         detailsPanel.add(borrowButton); // Ajouter le bouton au panneau des détails
 
         // Initialiser le champ pour l'ID utilisateur
@@ -121,110 +124,125 @@ public class LivreView extends JPanel {
         genreField = new JTextField(); 
     }
 
-	public void showEditLivreForm(Livre livre) {
-	    JDialog editLivreDialog = new JDialog();
-	    editLivreDialog.setTitle("Modifier un Livre");
-	    editLivreDialog.setSize(500, 400);
-	    editLivreDialog.setLayout(new GridBagLayout());
-	    editLivreDialog.setLocationRelativeTo(null); // Centrer le dialogue
-	
-	    GridBagConstraints gbc = new GridBagConstraints();
-	    gbc.insets = new Insets(5, 5, 5, 5); // Espacement autour des composants
-	    gbc.fill = GridBagConstraints.HORIZONTAL;
-	    gbc.anchor = GridBagConstraints.WEST;
-	
-	    // Ligne 1 : Titre
-	    gbc.gridx = 0;
-	    gbc.gridy = 0;
-	    editLivreDialog.add(new JLabel("Titre:"), gbc);
-	    gbc.gridx = 1;
-	    titreField.setText(livre.getTitre()); // Remplir le champ avec le titre existant
-	    editLivreDialog.add(titreField, gbc);
-	
-	    // Ligne 2 : Auteur
-	    gbc.gridx = 0;
-	    gbc.gridy = 1;
-	    editLivreDialog.add(new JLabel("Auteur:"), gbc);
-	    gbc.gridx = 1;
-	    auteurField.setText(livre.getAuteur()); // Remplir le champ avec l'auteur existant
-	    editLivreDialog.add(auteurField, gbc);
-	
-	    // Ligne 3 : Genre
-	    gbc.gridx = 0;
-	    gbc.gridy = 2;
-	    editLivreDialog.add(new JLabel("Genre:"), gbc);
-	    gbc.gridx = 1;
-	    String[] genres = {"Fiction", "Non-Fiction", "Science", "Fantasy", "Biography"};
-	    JComboBox<String> genreComboBox = new JComboBox<>(genres);
-	    genreComboBox.setSelectedItem(livre.getGenre()); // Sélectionner le genre existant
-	    editLivreDialog.add(genreComboBox, gbc);
-	
-	    // Ligne 4 : Année
-	    gbc.gridx = 0;
-	    gbc.gridy = 3;
-	    editLivreDialog.add(new JLabel("Année:"), gbc);
-	    gbc.gridx = 1;
-	    anneeField.setText(String.valueOf(livre.getAnneePublication())); // Remplir le champ avec l'année existante
-	    editLivreDialog.add(anneeField, gbc);
-	
-	    // Ligne 5 : ISBN
-	    gbc.gridx = 0;
-	    gbc.gridy = 4;
-	    editLivreDialog.add(new JLabel("ISBN:"), gbc);
-	    gbc.gridx = 1;
-	    isbnField.setText(livre.getIsbn()); // Remplir le champ avec l'ISBN existant
-	    editLivreDialog.add(isbnField, gbc);
-	
-	    // Ligne 6 : Description
-	    gbc.gridx = 0;
-	    gbc.gridy = 5;
-	    editLivreDialog.add(new JLabel("Description:"), gbc);
-	    gbc.gridx = 1;
-	    descriptionField.setText(livre.getDescription()); // Remplir le champ avec la description existante
-	    editLivreDialog.add(descriptionField, gbc);
-	
-	    // Ligne 7 : Éditeur
-	    gbc.gridx = 0;
-	    gbc.gridy = 6;
-	    editLivreDialog.add(new JLabel("Éditeur:"), gbc);
-	    gbc.gridx = 1;
-	    editeurField.setText(livre.getEditeur()); // Remplir le champ avec l'éditeur existant
-	    editLivreDialog.add(editeurField, gbc);
-	
-	    // Ligne 8 : Total Exemplaires
-	    gbc.gridx = 0;
-	    gbc.gridy = 7;
-	    editLivreDialog.add(new JLabel("Total Exemplaires:"), gbc);
-	    gbc.gridx = 1;
-	    totalExemplairesField.setText(String.valueOf(livre.getTotalExemplaires())); // Remplir le champ avec le total existant
-	    editLivreDialog.add(totalExemplairesField, gbc);
-	
-	    // Ligne 9 : Image
-	    gbc.gridx = 0;
-	    gbc.gridy = 8;
-	    editLivreDialog.add(new JLabel("Image:"), gbc);
-	    gbc.gridx = 1;
-	    imageField.setText(livre.getImageUrl()); // Remplir le champ avec l'URL de l'image existante
-	    editLivreDialog.add(imageField, gbc);
-	
-	    // Ligne 10 : Choisir Image Button
-	    gbc.gridx = 1;
-	    gbc.gridy = 9;
-	    JButton chooseImageButton = new JButton("Choisir Image");
-	    editLivreDialog.add(chooseImageButton, gbc);
-	
-	    // Ligne 11 : Submit Button
-	    gbc.gridx = 0;
-	    gbc.gridy = 10;
-	    gbc.gridwidth = 2;
-	    gbc.anchor = GridBagConstraints.CENTER;
-	    JButton editFormSubmitButton = new JButton("Modifier");
-	    editLivreDialog.add(editFormSubmitButton, gbc);
-	
-	    // Afficher le dialogue
-	    editLivreDialog.setVisible(true);
-	}
-	
+    public void showEditLivreForm(Livre livre) {
+        // Créer un nouveau JDialog pour modifier le livre
+        JDialog editLivreDialog = new JDialog();
+        editLivreDialog.setTitle("Modifier un Livre");
+        editLivreDialog.setSize(500, 400);
+        editLivreDialog.setLayout(new GridBagLayout());
+        editLivreDialog.setLocationRelativeTo(null); // Centrer le dialogue
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5); // Espacement autour des composants
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+
+        // Réinitialisation des champs
+        titreField.setText("");
+        auteurField.setText("");
+
+        // Ligne 1 : Titre
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        editLivreDialog.add(new JLabel("Titre:"), gbc);
+        gbc.gridx = 1;
+        titreField.setText(livre.getTitre()); // Remplir le champ avec le titre existant
+        editLivreDialog.add(titreField, gbc);
+
+        // Ligne 2 : Auteur
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        editLivreDialog.add(new JLabel("Auteur:"), gbc);
+        gbc.gridx = 1;
+        auteurField.setText(livre.getAuteur()); // Remplir le champ avec l'auteur existant
+        editLivreDialog.add(auteurField, gbc);
+
+        // Ligne 3 : Genre
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        editLivreDialog.add(new JLabel("Genre:"), gbc);
+        gbc.gridx = 1;
+        String[] genres = {"Fiction", "Non-Fiction", "Science", "Fantasy", "Biography"};
+        JComboBox<String> genreComboBox = new JComboBox<>(genres);
+        genreComboBox.setSelectedItem(livre.getGenre()); // Sélectionner le genre existant
+        editLivreDialog.add(genreComboBox, gbc);
+
+        // Ligne 4 : Année
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        editLivreDialog.add(new JLabel("Année:"), gbc);
+        gbc.gridx = 1;
+        anneeField.setText(String.valueOf(livre.getAnneePublication())); // Remplir le champ avec l'année existante
+        editLivreDialog.add(anneeField, gbc);
+
+        // Ligne 5 : ISBN
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        editLivreDialog.add(new JLabel("ISBN:"), gbc);
+        gbc.gridx = 1;
+        isbnField.setText(livre.getIsbn()); // Remplir le champ avec l'ISBN existant
+        editLivreDialog.add(isbnField, gbc);
+
+        // Ligne 6 : Description
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        editLivreDialog.add(new JLabel("Description:"), gbc);
+        gbc.gridx = 1;
+        descriptionField.setText(livre.getDescription()); // Remplir le champ avec la description existante
+        editLivreDialog.add(descriptionField, gbc);
+
+        // Ligne 7 : Éditeur
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        editLivreDialog.add(new JLabel("Éditeur:"), gbc);
+        gbc.gridx = 1;
+        editeurField.setText(livre.getEditeur()); // Remplir le champ avec l'éditeur existant
+        editLivreDialog.add(editeurField, gbc);
+
+        // Ligne 8 : Total Exemplaires
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        editLivreDialog.add(new JLabel("Total Exemplaires:"), gbc);
+        gbc.gridx = 1;
+        totalExemplairesField.setText(String.valueOf(livre.getTotalExemplaires())); // Remplir le champ avec le total existant
+        editLivreDialog.add(totalExemplairesField, gbc);
+
+        // Ligne 9 : Image
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        editLivreDialog.add(new JLabel("Image:"), gbc);
+        gbc.gridx = 1;
+        imageField.setText(livre.getImageUrl()); // Remplir le champ avec l'URL de l'image existante
+        editLivreDialog.add(imageField, gbc);
+
+        // Ligne 10 : Choisir Image Button
+        gbc.gridx = 1;
+        gbc.gridy = 9;
+        chooseImageButton = new JButton("Choisir Image");
+        editLivreDialog.add(chooseImageButton, gbc);
+        
+ 
+        // Ligne 11 : Submit Button
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        
+        
+        JButton testButton = new JButton("Test Button");
+        editLivreDialog.add(testButton);  // Ajout du bouton à votre fenêtre de dialogue
+
+        // Définir la taille et la visibilité du bouton
+        testButton.setPreferredSize(new Dimension(150, 40)); // Vous pouvez ajuster la taille si nécessaire
+        testButton.setVisible(true);
+        
+        editFormSubmitButton = new JButton("Modifier");
+        editLivreDialog.add(editFormSubmitButton, gbc);
+
+        // Afficher le dialogue
+        editLivreDialog.setVisible(true);
+    }
+
     
 	 public void showAddLivreForm() {
 	    JDialog addLivreDialog = new JDialog();
@@ -516,6 +534,9 @@ public class LivreView extends JPanel {
     public Livre getSelectedLivre() {
         return selectedLivre;
     }
+    public void setSelectedLivre(Livre livre) {
+        this.selectedLivre = livre; // Met à jour le livre sélectionné
+    }
     public JLabel getDeleteLabel() {
         // Créez un JLabel pour le bouton "Supprimer" et retournez-le
         return new JLabel(resizeIcon(createIcon("src/resources/delete-icon.png"), 20, 20));
@@ -540,7 +561,8 @@ public class LivreView extends JPanel {
     public void clearAddLivreForm() {
         System.out.println("Formulaire d'ajout réinitialisé.");
     }
- 
+
+    
 
     public void hideEditLivreForm() {
         System.out.println("Formulaire d'édition masqué.");
@@ -576,8 +598,18 @@ public class LivreView extends JPanel {
 
    
     public void clearEditLivreForm() {
-        System.out.println("Formulaire d'édition réinitialisé.");
+        titreField.setText("");
+        auteurField.setText("");
+        anneeField.setText("");
+        isbnField.setText("");
+        descriptionField.setText("");
+        editeurField.setText("");
+        totalExemplairesField.setText("");
+        imageField.setText("");
+        genreField.setText("");
     }
+    
+    
 	 public JButton getChooseImageButton() {
 	        return chooseImageButton; // Assurez-vous que chooseImageButton est un champ de classe
  }
@@ -591,4 +623,11 @@ public class LivreView extends JPanel {
  public void setController(LivreController livreController) {
 	    this.livreController = livreController; // Initialiser le contrôleur
 	}
+
+ public void closeEditDialog() {
+	    if (editLivreDialog != null) {
+	        editLivreDialog.dispose(); // Close the dialog
+	    }
+	}
+
 }

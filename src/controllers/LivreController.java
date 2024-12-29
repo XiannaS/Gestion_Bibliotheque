@@ -6,6 +6,9 @@ import vue.LivreView;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.List;
 
@@ -25,15 +28,24 @@ public class LivreController {
         livreView.getAddButton().addActionListener(e -> livreView.showAddLivreForm());
 
         // Ajouter le listener pour le bouton "Choisir Image"
-        livreView.getChooseImageButton().addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileFilter(new FileNameExtensionFilter("Images", "jpg", "png", "gif"));
-            int returnValue = fileChooser.showOpenDialog(null);
-            if (returnValue == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-                livreView.getImageField().setText(selectedFile.getAbsolutePath());
-            }
-        });
+        SwingUtilities.invokeLater(() -> {
+            livreView.getChooseImageButton().addActionListener(e -> {
+                System.out.println("Le bouton a été cliqué.");
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileFilter(new FileNameExtensionFilter("Images", "jpg", "png", "gif"));
+                int returnValue = fileChooser.showOpenDialog(null);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    livreView.getImageField().setText(selectedFile.getAbsolutePath());  // Affiche le chemin de l'image
+                }
+            });
+     
+            livreView.testButton.addActionListener(e -> {
+                System.out.println("Test Button Clicked"); // Vérifiez si ce log s'affiche dans la console
+            });
+
+     
+
 
         livreView.getEditButton().addActionListener(e -> {
             Livre selectedLivre = livreView.getSelectedLivre();
@@ -57,13 +69,12 @@ public class LivreController {
             Livre selectedLivre = livreView.getSelectedLivre();
             String userId = livreView.getUserIdField().getText();
             if (selectedLivre != null && !userId.isEmpty()) {
-                borrowLivre(selectedLivre, userId);
+                emprunterLivre(selectedLivre, userId);
             } else {
                 showMessage("Veuillez sélectionner un livre et entrer un ID utilisateur.", "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
-
     public void loadLivres() {
         List<Livre> livres = livreDAO.getAllLivres();
         livreView.getPopularPanel().removeAll(); // Vider le panneau avant de redessiner
@@ -88,14 +99,27 @@ public class LivreController {
                 }
             });
 
+            // Ajouter un listener pour afficher les détails du livre
+            livrePanel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    showLivreDetails(livre); // Afficher les détails du livre
+                }
+            });
+
             livreView.getPopularPanel().add(livrePanel);
         }
 
         livreView.getPopularPanel().revalidate(); // Revalider le panneau
+       
+
+
         livreView.getPopularPanel().repaint(); // Repeindre le panneau
     }
+
     public void addLivreClicked() {
         // Récupérer les données du formulaire
+    
         String titre = livreView.getTitreField().getText();
         String auteur = livreView.getAuteurField().getText();
         String genre = livreView.getGenreField().getText();
@@ -105,76 +129,29 @@ public class LivreController {
         String imageUrl = livreView.getImageField().getText();
         int anneePublication;
         int totalExemplaires;
-
         try {
-            // Vérifier l'année de publication
-            String anneeText = livreView.getAnneeField().getText().trim();
-            if (anneeText.isEmpty()) {
-                throw new IllegalArgumentException("L'année de publication ne peut pas être vide.");
-            }
-            anneePublication = Integer.parseInt(anneeText);
-
-            // Vérifier le nombre total d'exemplaires
-            String totalExemplairesText = livreView.getTotalExemplairesField().getText();
-            if (totalExemplairesText.isEmpty()) {
-                throw new IllegalArgumentException("Le nombre total d'exemplaires ne peut pas être vide.");
-            }
-            totalExemplaires = Integer.parseInt(totalExemplairesText);
-
-            // Vérifier si le titre est vide
-            if (titre.isEmpty()) {
-                throw new IllegalArgumentException("Le titre ne peut pas être vide.");
-            }
-
-            // Vérifier si l'auteur est vide
-            if (auteur.isEmpty()) {
-                throw new IllegalArgumentException("L'auteur ne peut pas être vide.");
-            }
-
-            // Vérifier si l'ISBN est vide
-            if (isbn.isEmpty()) {
-                throw new IllegalArgumentException("L'ISBN ne peut pas être vide.");
-            }
-
-            // Vérifier si le livre existe déjà
-            if (livreDAO.livreExists(isbn)) {
-                JOptionPane.showMessageDialog(livreView, "Un livre avec cet ISBN existe déjà.", "Erreur", JOptionPane.ERROR_MESSAGE);
-                return; // Ne pas continuer si le livre existe déjà
-            }
-
-            // Générer un nouvel ID
-            int id = livreDAO.generateNewId();
-
-            // Créer un nouvel objet Livre
-            Livre newLivre = new Livre(id, titre, auteur, genre, anneePublication, imageUrl, isbn, description, editeur, totalExemplaires);
-
-            // Ajouter le livre au modèle
+            validateLivreFields(titre, auteur, isbn, livreView.getAnneeField().getText(), livreView.getTotalExemplairesField().getText());
+            // Génération de l'objet Livre et ajout
+            Livre newLivre = new Livre(livreDAO.generateNewId(), titre, auteur, genre, 
+                                        Integer.parseInt(livreView.getAnneeField().getText().trim()), 
+                                        imageUrl, isbn, description, editeur, 
+                                        Integer.parseInt(livreView.getTotalExemplairesField().getText().trim()));
             livreDAO.addLivre(newLivre);
-
-            // Afficher un message de succès
             JOptionPane.showMessageDialog(livreView, "Le livre a été ajouté avec succès.");
-
-            // Mettre à jour la liste des livres affichés
             loadLivres();
-
-            // Réinitialiser le formulaire
             livreView.clearAddLivreForm();
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(livreView, "Veuillez entrer des valeurs numériques valides pour l'année et le nombre d'exemplaires.", "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(livreView, e.getMessage(), "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(livreView, "Erreur lors de l'ajout du livre: " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
-    }
 
+    }
+   
     public void showEditLivreForm(Livre livre) {
-        livreView.showEditLivreForm(livre);
-        livreView.getEditFormSubmitButton().addActionListener(e -> {
-            editLivre(livre);
-        });
-    }
+        livreView.showEditLivreForm(livre); // Show the edit dialog
 
+  
+    }
+    
     public void editLivre(Livre livre) {
         // Récupérer les données du formulaire
         String titre = livreView.getTitreField().getText();
@@ -258,13 +235,45 @@ public class LivreController {
         loadLivres(); // Mettre à jour la liste des livres affichés
     }
 
-    private void borrowLivre(Livre livre, String userId) {
+    public void showLivreDetails(Livre livre) {
+        livreView.displayLivreDetails(livre); // Afficher les détails du livre
+
+        // Ajouter l'ActionListener pour le bouton Emprunter
+        livreView.getBorrowButton().addActionListener(e -> {
+            String userId = livreView.getUserIdField().getText();
+            if (!userId.isEmpty()) {
+                emprunterLivre(livre, userId); // Appeler la méthode pour emprunter le livre
+            } else {
+                JOptionPane.showMessageDialog(null, "Veuillez entrer un ID utilisateur.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+    }
+
+    public void emprunterLivre(Livre livre, String userId) {
         // Logique pour emprunter le livre
-        // Vous pouvez ajouter ici la logique pour vérifier si le livre est disponible et enregistrer l'emprunt
-        JOptionPane.showMessageDialog(livreView, "Le livre '" + livre.getTitre() + "' a été emprunté par l'utilisateur avec ID: " + userId);
+        if (livre.isDisponible()) {
+            // Ajoutez ici la logique pour enregistrer l'emprunt
+            JOptionPane.showMessageDialog(null, "Livre emprunté avec succès !");
+        } else {
+            JOptionPane.showMessageDialog(null, "Désolé, ce livre n'est pas disponible.");
+        }
     }
 
     private void showMessage(String message, String title, int messageType) {
         JOptionPane.showMessageDialog(livreView, message, title, messageType);
     }
+    private void validateLivreFields(String titre, String auteur, String isbn, String anneeText, String totalExemplairesText) throws IllegalArgumentException {
+        if (titre.isEmpty()) throw new IllegalArgumentException("Le titre ne peut pas être vide.");
+        if (auteur.isEmpty()) throw new IllegalArgumentException("L'auteur ne peut pas être vide.");
+        if (isbn.isEmpty()) throw new IllegalArgumentException("L'ISBN ne peut pas être vide.");
+        if (anneeText.trim().isEmpty()) throw new IllegalArgumentException("L'année de publication ne peut pas être vide.");
+        if (totalExemplairesText.trim().isEmpty()) throw new IllegalArgumentException("Le nombre total d'exemplaires ne peut pas être vide.");
+        try {
+            Integer.parseInt(anneeText.trim());
+            Integer.parseInt(totalExemplairesText.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Veuillez entrer des valeurs numériques valides pour l'année et le nombre d'exemplaires.");
+        }
+    }
+
 }
