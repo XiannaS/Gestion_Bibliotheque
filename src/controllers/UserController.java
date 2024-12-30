@@ -1,48 +1,104 @@
 package controllers;
 
+import model.Role;
 import model.User;
 import model.UserDAO;
+import vue.UserView;
 
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
 public class UserController {
-    private UserDAO userDAO;
+    private UserView userView;
+    private UserDAO userDAO; // Assume you have a UserService to handle data operations
 
-    public UserController(String filePath) {
-        this.userDAO = new UserDAO(filePath);
+    public UserController(UserView userView, UserDAO userDAO) {
+        this.userView = userView;
+        this.userDAO = userDAO;
+
+        // Ajouter des écouteurs d'événements
+        userView.getAjouterButton().addActionListener(e -> ajouterUtilisateur());
+        userView.getModifierButton().addActionListener(e -> modifierUtilisateur());
+        userView.getSupprimerButton().addActionListener(e -> supprimerUtilisateur());
+        userView.getUserTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    afficherDetailsUtilisateur();
+                }
+            }
+        });
     }
 
-    public List<User> getAllUsers() {
-        return userDAO.getAllUsers();
-    }
-    public void addUser (User user) {
-        // Vérifiez si l'utilisateur existe déjà par ID
-        if (userExists(user.getId())) {
-            throw new IllegalArgumentException("Un utilisateur avec cet ID existe déjà.");
+    private void ajouterUtilisateur() {
+        // Générer un ID unique pour l'utilisateur
+        String id = String.valueOf(System.currentTimeMillis()); // ou utiliser UUID.randomUUID().toString();
+
+        User user = new User(id, // Ajout de l'ID
+                userView.getNomField(),
+                userView.getPrenomField(),
+                userView.getEmailField(),
+                userView.getNumeroTelField(),
+                "", // Mot de passe, peut être vide ou nul
+                userView.getSelectedRole(),
+                userView.isStatutChecked());
+
+        try {
+            userDAO.addUser (user);
+            JOptionPane.showMessageDialog(userView, "Utilisateur ajouté avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
+            userView.clearFields();
+            displayUsers();
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(userView, e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
-        
-        // Vérifiez si l'email existe déjà
-        if (userExists(user.getEmail())) {
-            throw new IllegalArgumentException("Un utilisateur avec cet email existe déjà.");
-        }
-
-        userDAO.addUser (user);
     }
 
-    public void updateUser (User user) {
+    private void modifierUtilisateur() {
+        int selectedRow = userView.getUserTable().getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(userView, "Veuillez sélectionner un utilisateur à modifier.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String id = (String) userView.getUserTable().getValueAt(selectedRow, 0);
+        User user = new User(id, userView.getNomField(), userView.getPrenomField(), userView.getEmailField(),
+                userView.getNumeroTelField(), "", userView.getSelectedRole(), userView.isStatutChecked());
         userDAO.updateUser (user);
+        JOptionPane.showMessageDialog(userView, "Utilisateur mis à jour avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
+        userView.clearFields();
+        displayUsers();
     }
 
-    public void deleteUser (String id) {
+    private void supprimerUtilisateur() {
+        int selectedRow = userView.getUserTable().getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(userView, "Veuillez sélectionner un utilisateur à supprimer.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String id = (String) userView.getUserTable().getValueAt(selectedRow, 0);
         userDAO.deleteUser (id);
+        JOptionPane.showMessageDialog(userView, "Utilisateur supprimé avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
+        userView.clearFields();
+        displayUsers();
     }
 
-    public boolean userExists(String id) {
-        return getAllUsers().stream().anyMatch(user -> user.getId().equals(id));
+    private void afficherDetailsUtilisateur() {
+        int selectedRow = userView.getUserTable().getSelectedRow();
+        if (selectedRow != -1) {
+            userView.getNomField().setText((String) userView.getUserTable().getValueAt(selectedRow, 1));
+            userView.getPrenomField().setText((String) userView.getUserTable().getValueAt(selectedRow, 2));
+            userView.getEmailField().setText((String) userView.getUserTable().getValueAt(selectedRow, 3));
+            userView.getNumeroTelField().setText((String) userView.getUserTable().getValueAt(selectedRow, 4));
+            userView.getRoleComboBox().setSelectedItem(Role.fromLabel((String) userView.getUserTable().getValueAt(selectedRow, 5)));
+            userView.setStatutChecked((Boolean) userView.getUserTable().getValueAt(selectedRow, 6));
+        }
     }
 
-    public boolean userExistsByEmail(String email) {
-        return getAllUsers().stream().anyMatch(user -> user.getEmail().equalsIgnoreCase(email));
+    public void displayUsers() {
+        List<User> users = userDAO.getAllUsers();
+        userView.displayUsers(users);
     }
-    
-}
+}  

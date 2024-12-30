@@ -3,18 +3,12 @@ package vue;
 import controllers.EmpruntController;
 import controllers.LivreController;
 import controllers.UserController;
-import model.LivreDAO;
-import model.UserDAO;
-import model.EmpruntDAO;
 
 import javax.swing.*;
-import javax.swing.UIManager.*;
-
-import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.intellijthemes.FlatDraculaIJTheme;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatDraculaIJTheme;
 
 public class BibliothequeApp extends JFrame {
     private static final long serialVersionUID = 1L;
@@ -23,7 +17,7 @@ public class BibliothequeApp extends JFrame {
     private JButton profileButton;
     private JButton notificationButton;
     private JLabel welcomeLabel;
-    private boolean isDarkMode = false; // Commencer avec le mode clair
+    private boolean isDarkMode = true;
 
     // Constructeur de la classe BibliothequeApp
     public BibliothequeApp() {
@@ -32,39 +26,81 @@ public class BibliothequeApp extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Initialisation des DAOs
-        LivreDAO livreDAO = new LivreDAO("src/resources/books.csv");
-        UserDAO userDAO = new UserDAO("src/resources/users.csv");
-        EmpruntDAO empruntDAO = new EmpruntDAO("src/resources/emprunt.csv");
-
         // Initialisation des vues
-        LivreView livreView = new LivreView();  // Création sans contrôleur
+        LivreView livreView = new LivreView();
         EmpruntView empruntView = new EmpruntView();
 
         // Initialisation des contrôleurs
-        EmpruntController empruntController = new EmpruntController(empruntView, "src/resources/emprunt.csv", "src/resources/books.csv", "src/resources/users.csv");
-        LivreController livreController = new LivreController(livreView, livreDAO);  // Création du contrôleur avec la vue et le DAO
+        EmpruntController empruntController = null;
+        LivreController livreController = null;
+        UserController userController = null;
 
-        // Injecter livreController dans livreView après sa création
-        livreView.setLivreController(livreController); 
+        // Chargement des contrôleurs et gestion des exceptions pour chaque
+        try {
+            empruntController = new EmpruntController(empruntView,
+                "src/resources/emprunt.csv",
+                "src/resources/books.csv",
+                "src/resources/users.csv"
+            );
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erreur lors du chargement des emprunts : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
 
-        // Créer le panneau d'onglets
+        try {
+            livreController = new LivreController(livreView, "src/resources/books.csv", empruntController);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erreur lors du chargement des livres : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+
+        try {
+            userController = new UserController("src/resources/users.csv");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erreur lors du chargement des utilisateurs : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+
+        // Création du panneau d'onglets
         tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Livres", livreView);
-        tabbedPane.addTab("Emprunts", empruntView);
 
-        // Ajouter le panneau d'onglets à la fenêtre principale
-        add(tabbedPane, BorderLayout.CENTER);
+        // Vérification de l'initialisation des contrôleurs avant d'ajouter des vues
+        if (livreController != null) {
+            tabbedPane.addTab("Livres", livreView);
+        }
 
-        // Créer un JPanel pour l'entête avec des icônes
+        if (userController != null) {
+            UserView userView = new UserView(userController);
+            tabbedPane.addTab("Utilisateurs", userView);
+        }
+
+        if (empruntController != null) {
+            tabbedPane.addTab("Emprunts", empruntView);
+        }
+        // Création du panneau d'onglets
+        tabbedPane = new JTabbedPane();
+
+        // Vérification de l'initialisation des contrôleurs avant d'ajouter des vues
+        if (livreController != null) {
+            tabbedPane.addTab("Livres", livreView);
+        }
+
+        if (userController != null) {
+            UserView userView = new UserView(userController);
+            tabbedPane.addTab("Utilisateurs", userView);
+        }
+
+        if (empruntController != null) {
+            tabbedPane.addTab("Emprunts", empruntView);
+        }
+
+        // Créer un JPanel pour le header avec des icônes
         JPanel headerPanel = new JPanel();
-        headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT)); // Alignement à droite pour les icônes
+        headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));  // Alignement à droite pour les icônes
 
         // Icône de notification
         ImageIcon notificationIcon = new ImageIcon(new ImageIcon("src/resources/notification.png")
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         notificationButton = new JButton(notificationIcon);
         notificationButton.setToolTipText("Notifications");
+        notificationButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
         headerPanel.add(notificationButton);
 
         // Icône de profil
@@ -72,6 +108,7 @@ public class BibliothequeApp extends JFrame {
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         profileButton = new JButton(profileIcon);
         profileButton.setToolTipText("Profil");
+        profileButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
         profileButton.addActionListener(this::onProfileClicked);
         headerPanel.add(profileButton);
 
@@ -80,6 +117,7 @@ public class BibliothequeApp extends JFrame {
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         toggleThemeButton = new JButton(toggleThemeIcon);
         toggleThemeButton.setToolTipText("Basculer le thème");
+        toggleThemeButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
         toggleThemeButton.addActionListener(this::toggleTheme);
         headerPanel.add(toggleThemeButton);
 
@@ -87,41 +125,47 @@ public class BibliothequeApp extends JFrame {
         welcomeLabel = new JLabel("Bienvenue, Nom Utilisateur !");
         headerPanel.add(welcomeLabel);
 
-        // Ajouter l'entête dans la fenêtre principale
-        add(headerPanel, BorderLayout.NORTH); // Ajouter l'entête en haut
+        // Ajouter le header et les onglets dans la fenêtre principale
+        add(headerPanel, BorderLayout.NORTH); // Ajouter le header en haut
+        add(tabbedPane, BorderLayout.CENTER);  // Ajouter les onglets au centre
     }
 
+    /**
+     * Action qui gère le clic sur le bouton de profil
+     *
+     * @param event L'événement de clic
+     */
     private void onProfileClicked(ActionEvent event) {
+        // Action à effectuer lors du clic sur le profil
         JOptionPane.showMessageDialog(this, "Profil de l'utilisateur sélectionné.", "Profil", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /**
+     * Bascule entre le mode sombre et le mode clair
+     *
+     * @param event L'événement de clic
+     */
     private void toggleTheme(ActionEvent event) {
         if (isDarkMode) {
             try {
-                UIManager.setLookAndFeel(new FlatLightLaf()); // Mode clair
+                UIManager.setLookAndFeel(new FlatLightLaf());
             } catch (UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                UIManager.setLookAndFeel(new FlatDraculaIJTheme()); // Mode sombre
+                UIManager.setLookAndFeel(new FlatDraculaIJTheme());
             } catch (UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
             }
         }
-        SwingUtilities.updateComponentTreeUI(this); // Rafraîchir l'interface
-        isDarkMode = !isDarkMode; // Basculer le mode
+        // Mettre à jour l'interface graphique
+        SwingUtilities.updateComponentTreeUI(this);
+        isDarkMode = !isDarkMode;
     }
 
     public static void main(String[] args) {
-        // Appliquer FlatLaf par défaut
-        try {
-            UIManager.setLookAndFeel(new FlatLightLaf()); // Thème clair par défaut
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
-
-        // Lancer l'application
+        // Assurez-vous de lancer l'UI sur le thread de l'Event Dispatching (EDT)
         SwingUtilities.invokeLater(() -> {
             new BibliothequeApp().setVisible(true);
         });

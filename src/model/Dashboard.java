@@ -52,7 +52,7 @@ public class Dashboard {
 
     private List<Livre> getLivresLesPlusEmpruntes() {
         // Implémentez la logique pour récupérer les livres les plus empruntés
-        return empruntController.listerEmprunts().stream()
+        return empruntController.chargerEmprunts().stream()
                 .collect(Collectors.groupingBy(Emprunt::getLivreId, Collectors.counting()))
                 .entrySet().stream()
                 .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
@@ -63,7 +63,7 @@ public class Dashboard {
 
     private List<Object> getUtilisateursLesPlusActifs() {
         // Récupérer les emprunts et les regrouper par ID d'utilisateur
-        return empruntController.listerEmprunts().stream()
+        return empruntController.chargerEmprunts().stream()
                 // Regroupement par ID utilisateur avec comptage des emprunts
                 .collect(Collectors.groupingBy(Emprunt::getUserId, Collectors.counting()))
                 // Trier par le nombre d'emprunts (valeur de l'entrée), du plus grand au plus petit

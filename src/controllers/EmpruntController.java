@@ -107,7 +107,10 @@ public class EmpruntController {
         }
         empruntView.updateEmpruntsTable(emprunts);
     }
-
+    public int generateEmpruntId() {
+        // Logique pour générer un nouvel ID unique pour un emprunt
+        return empruntModel.listerEmprunts().size() + 1; // Exemple simple
+    }
     private int getSelectedEmpruntId() {
         int selectedRow = empruntView.getEmpruntTable().getSelectedRow();
         if (selectedRow == -1) {
@@ -143,5 +146,9 @@ public class EmpruntController {
             chargerEmprunts("Tous"); // Recharge la liste des emprunts
             JOptionPane.showMessageDialog(empruntView, "Emprunt supprimé avec succès !");
         }
+    }
+    public void ajouterEmprunt(Emprunt emprunt) {
+        empruntModel.ajouterEmprunt(emprunt); // Assurez-vous que cette méthode existe dans EmpruntDAO
+        chargerEmprunts("Tous"); // Recharge la liste des emprunts après ajout
     }
 }
