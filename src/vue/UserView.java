@@ -29,11 +29,12 @@ public class UserView extends JPanel {
         // Formulaire de recherche
         JPanel searchPanel = new JPanel(new FlowLayout());
         searchField = new JTextField(15);
-        searchRoleComboBox = new JComboBox<>(new Role[]{
-            null, // Option pour tous les rôles
-            Role.MEMBRE,
-            Role.BIBLIOTHECAIRE
-        });
+        searchRoleComboBox = new JComboBox<>(new Role[] {
+        	    null, // Option pour tous les rôles
+        	    Role.fromLabel("MEMBRE"),
+        null// Assurez-vous que l'étiquette est en majuscules
+        	});
+
         JButton searchButton = new JButton("Rechercher");
 
         searchPanel.add(new JLabel("Nom ou ID :"));
@@ -173,4 +174,14 @@ public class UserView extends JPanel {
         statutCheckBox.setSelected(false);
         userTable.clearSelection();
     }
+
+    public JComboBox<Role> getRoleComboBox() {
+        return roleComboBox; // Assurez-vous que roleComboBox est un JComboBox
+    }
+    
+    public void setStatutChecked(boolean statut) {
+        statutCheckBox.setSelected(statut);
+    }
+     
+ 
 }

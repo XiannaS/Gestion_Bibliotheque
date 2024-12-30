@@ -3,6 +3,7 @@ package vue;
 import controllers.EmpruntController;
 import controllers.LivreController;
 import controllers.UserController;
+import model.UserDAO;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,12 +30,12 @@ public class BibliothequeApp extends JFrame {
         // Initialisation des vues
         LivreView livreView = new LivreView();
         EmpruntView empruntView = new EmpruntView();
-
+        UserView userView = new UserView(); 
         // Initialisation des contrôleurs
         EmpruntController empruntController = null;
         LivreController livreController = null;
         UserController userController = null;
-
+        UserDAO userDAO = new UserDAO("src/resources/users.csv");
         // Chargement des contrôleurs et gestion des exceptions pour chaque
         try {
             empruntController = new EmpruntController(empruntView,
@@ -53,11 +54,10 @@ public class BibliothequeApp extends JFrame {
         }
 
         try {
-            userController = new UserController("src/resources/users.csv");
+            userController = new UserController( userView, userDAO);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des utilisateurs : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
-
         // Création du panneau d'onglets
         tabbedPane = new JTabbedPane();
 
@@ -67,7 +67,7 @@ public class BibliothequeApp extends JFrame {
         }
 
         if (userController != null) {
-            UserView userView = new UserView(userController);
+          
             tabbedPane.addTab("Utilisateurs", userView);
         }
 
@@ -83,7 +83,7 @@ public class BibliothequeApp extends JFrame {
         }
 
         if (userController != null) {
-            UserView userView = new UserView(userController);
+           
             tabbedPane.addTab("Utilisateurs", userView);
         }
 

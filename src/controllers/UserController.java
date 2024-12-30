@@ -35,20 +35,10 @@ public class UserController {
     }
 
     private void ajouterUtilisateur() {
-        // Générer un ID unique pour l'utilisateur
-        String id = String.valueOf(System.currentTimeMillis()); // ou utiliser UUID.randomUUID().toString();
-
-        User user = new User(id, // Ajout de l'ID
-                userView.getNomField(),
-                userView.getPrenomField(),
-                userView.getEmailField(),
-                userView.getNumeroTelField(),
-                "", // Mot de passe, peut être vide ou nul
-                userView.getSelectedRole(),
-                userView.isStatutChecked());
-
+        User user = new User(userView.getNomField(), userView.getPrenomField(), userView.getEmailField(),
+                userView.getNumeroTelField(), "", userView.getSelectedRole(), userView.isStatutChecked());
         try {
-            userDAO.addUser (user);
+            userService.addUser (user);
             JOptionPane.showMessageDialog(userView, "Utilisateur ajouté avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
             userView.clearFields();
             displayUsers();

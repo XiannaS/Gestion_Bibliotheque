@@ -211,6 +211,7 @@ public void modifierLivre() {
             livreView.setDetails(livre);
         }
     }
+    
     private int generateId() {
         // Logique pour générer un nouvel ID unique pour un livre
         return livreDAO.getAllLivres().size() + 1; // Exemple simple

@@ -16,10 +16,12 @@ public enum Role {
 
     public static Role fromLabel(String label) {
         for (Role role : Role.values()) {
-            if (role.getLabel().equalsIgnoreCase(label)) {
+            // Comparaison insensible à la casse et gestion des erreurs de typographie simples
+            if (role.getLabel().equalsIgnoreCase(label.trim())) {
                 return role;
             }
         }
         throw new IllegalArgumentException("Aucun rôle trouvé pour l'étiquette : " + label);
     }
+
 }
