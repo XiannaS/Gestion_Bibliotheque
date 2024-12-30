@@ -26,7 +26,9 @@ public class User {
     public String getNom() {
         return nom;
     }
-
+    public boolean isActive() {
+        return statut; // Retourne true si l'utilisateur est actif, false sinon
+    }
     public void setNom(String nom) {
         this.nom = nom;
     }

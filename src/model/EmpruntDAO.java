@@ -35,7 +35,35 @@ public class EmpruntDAO {
         }
         throw new IllegalArgumentException("Emprunt non trouvé ou déjà retourné.");
     }
+    public static Emprunt fromCSV(String line) {
+        String[] parts = line.split(";");
+        try {
+            int id = Integer.parseInt(parts[0]);
+            int livreId = Integer.parseInt(parts[1]);
+            String userId = parts[2];
+            LocalDate dateEmprunt = LocalDate.parse(parts[3]);
+            LocalDate dateRetourPrevue = LocalDate.parse(parts[4]);
+            
+            LocalDate dateRetourEffective = null;
+            boolean rendu = false;
+            int penalite = 0;
 
+            if (parts.length > 5 && !parts[5].isEmpty()) {
+                dateRetourEffective = LocalDate.parse(parts[5]);
+            }
+            if (parts.length > 6) {
+                rendu = Boolean.parseBoolean(parts[6]);
+            }
+            if (parts.length > 7) {
+                penalite = Integer.parseInt(parts[7]);
+            }
+
+            return new Emprunt(id, livreId, userId, dateEmprunt, dateRetourPrevue, dateRetourEffective, rendu, penalite);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException e) {
+            System.err.println("Ligne ignorée en raison d'une erreur de format : " + line);
+            return null; // Ignorer les lignes incorrectes
+        }
+    }
     // Lister les emprunts
     public List<Emprunt> listerEmprunts() {
         return new ArrayList<>(emprunts);
@@ -47,7 +75,7 @@ public class EmpruntDAO {
             String line;
             br.readLine(); // Ignorer l'en-tête
             while ((line = br.readLine()) != null) {
-                Emprunt emprunt = Emprunt.fromCSV(line);
+                Emprunt emprunt = fromCSV(line);
                 if (emprunt != null) { // Ajouter uniquement les emprunts valides
                     emprunts.add(emprunt);
                 }

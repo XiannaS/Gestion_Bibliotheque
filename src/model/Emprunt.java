@@ -41,6 +41,13 @@ public class Emprunt {
     public boolean peutEtreRenouvele() {
         return nombreRenouvellements < 1;
     }
+    public boolean isReturned() {
+        return rendu; // Retourne true si le livre a été retourné, false sinon
+    }
+
+    public void setReturned(boolean returned) {
+        this.rendu = returned; // Setter pour le statut de retour
+    }
     // Getters et setters existants
     public int getId() { return id; }
     public int getLivreId() { return livreId; }
@@ -62,6 +69,20 @@ public class Emprunt {
             this.penalite = 0;
         }
     }
+    
+    public int calculerPenalite() {
+        if (dateRetourEffective != null && dateRetourEffective.isAfter(dateRetourPrevue)) {
+        	long joursRetard = ChronoUnit.DAYS.between(dateRetourPrevue, dateRetourEffective);
+        	penalite = (int) (joursRetard * 1); // 1   par jour de retard
+  
+        }
+        return penalite;
+    }
+
+    
+    public boolean isRetard() {
+        return dateRetourEffective != null && dateRetourEffective.isAfter(dateRetourPrevue);
+    }
 
     public String toCSV() {
         return id + ";" + livreId + ";" + userId + ";" + dateEmprunt + ";" +
@@ -69,35 +90,7 @@ public class Emprunt {
                rendu + ";" + penalite;
     }
 
-    public static Emprunt fromCSV(String line) {
-        String[] parts = line.split(";");
-        try {
-            int id = Integer.parseInt(parts[0]);
-            int livreId = Integer.parseInt(parts[1]);
-            String userId = parts[2];
-            LocalDate dateEmprunt = LocalDate.parse(parts[3]);
-            LocalDate dateRetourPrevue = LocalDate.parse(parts[4]);
-            
-            LocalDate dateRetourEffective = null;
-            boolean rendu = false;
-            int penalite = 0;
 
-            if (parts.length > 5 && !parts[5].isEmpty()) {
-                dateRetourEffective = LocalDate.parse(parts[5]);
-            }
-            if (parts.length > 6) {
-                rendu = Boolean.parseBoolean(parts[6]);
-            }
-            if (parts.length > 7) {
-                penalite = Integer.parseInt(parts[7]);
-            }
-
-            return new Emprunt(id, livreId, userId, dateEmprunt, dateRetourPrevue, dateRetourEffective, rendu, penalite);
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException e) {
-            System.err.println("Ligne ignorée en raison d'une erreur de format : " + line);
-            return null; // Ignorer les lignes incorrectes
-        }
-    }
     public void setDateRetourPrevue(LocalDate dateRetourPrevue) {
         this.dateRetourPrevue = dateRetourPrevue;
     }

@@ -15,13 +15,14 @@ public enum Role {
     }
 
     public static Role fromLabel(String label) {
+        System.out.println("Recherche du rôle pour l'étiquette : " + label); // Ajoutez cette ligne
         for (Role role : Role.values()) {
-            // Comparaison insensible à la casse et gestion des erreurs de typographie simples
             if (role.getLabel().equalsIgnoreCase(label.trim())) {
+            	System.out.println("  rôle trouve l'étiquette : " + label); 
                 return role;
             }
         }
         throw new IllegalArgumentException("Aucun rôle trouvé pour l'étiquette : " + label);
     }
-
+    
 }

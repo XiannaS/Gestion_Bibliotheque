@@ -4,7 +4,6 @@ public class Livre {
     private String titre;
     private String auteur;
     private String genre;
- 
     private int anneePublication;
     private String imageUrl;
     private String isbn; // Ajout de l'ISBN

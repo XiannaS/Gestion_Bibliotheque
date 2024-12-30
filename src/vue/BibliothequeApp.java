@@ -146,25 +146,28 @@ public class BibliothequeApp extends JFrame {
      * @param event L'événement de clic
      */
     private void toggleTheme(ActionEvent event) {
-        if (isDarkMode) {
-            try {
+        try {
+            if (isDarkMode) {
                 UIManager.setLookAndFeel(new FlatLightLaf());
-            } catch (UnsupportedLookAndFeelException e) {
-                e.printStackTrace();
-            }
-        } else {
-            try {
+            } else {
                 UIManager.setLookAndFeel(new FlatDraculaIJTheme());
-            } catch (UnsupportedLookAndFeelException e) {
-                e.printStackTrace();
             }
+            // Mettre à jour l'interface graphique
+            SwingUtilities.updateComponentTreeUI(this);
+            isDarkMode = !isDarkMode; // Update the mode after changing the look and feel
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
         }
-        // Mettre à jour l'interface graphique
-        SwingUtilities.updateComponentTreeUI(this);
-        isDarkMode = !isDarkMode;
     }
-
+    
     public static void main(String[] args) {
+        // Définir le look and feel par défaut
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf()); // ou FlatDraculaIJTheme() pour le mode sombre
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+
         // Assurez-vous de lancer l'UI sur le thread de l'Event Dispatching (EDT)
         SwingUtilities.invokeLater(() -> {
             new BibliothequeApp().setVisible(true);

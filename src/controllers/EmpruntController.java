@@ -3,6 +3,7 @@ package controllers;
 import model.Emprunt;
 import model.EmpruntDAO;
 import model.LivreDAO;
+import model.User;
 import model.UserDAO;
 import vue.EmpruntView;
 
@@ -10,6 +11,7 @@ import javax.swing.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
@@ -67,27 +69,32 @@ public class EmpruntController {
             chargerEmprunts(selectedCriteria);
         });
     }
-
     public void chargerEmprunts(String searchTerm, String searchType) {
         List<Emprunt> emprunts = empruntModel.listerEmprunts(); // Récupérer tous les emprunts
-        // Filtrer les emprunts selon le type de recherche
         try {
-            if (searchType.equals("ID Emprunt")) {
-                emprunts = emprunts.stream().filter(e -> e.getId() == Integer.parseInt(searchTerm)).collect(Collectors.toList());
-            } else if (searchType.equals("ID Livre")) {
-                emprunts = emprunts.stream().filter(e -> e.getLivreId() == Integer.parseInt(searchTerm)).collect(Collectors.toList());
-            } else if (searchType.equals("ID Utilisateur")) {
-                emprunts = emprunts.stream().filter(e -> e.getUserId().equals(searchTerm)).collect(Collectors.toList());
-            } else if (searchType.equals("Date")) {
-                LocalDate date = LocalDate.parse(searchTerm);
-                emprunts = emprunts.stream().filter(e -> e.getDateEmprunt().isEqual(date)).collect(Collectors.toList());
+            switch (searchType) {
+                case "ID Emprunt":
+                    emprunts = emprunts.stream().filter(e -> e.getId() == Integer.parseInt(searchTerm)).collect(Collectors.toList());
+                    break;
+                case "ID Livre":
+                    emprunts = emprunts.stream().filter(e -> e.getLivreId() == Integer.parseInt(searchTerm)).collect(Collectors.toList());
+                    break;
+                case "ID Utilisateur":
+                    emprunts = emprunts.stream().filter(e -> e.getUserId().equals(searchTerm)).collect(Collectors.toList());
+                    break;
+                case "Date":
+                    LocalDate date = LocalDate.parse(searchTerm);
+                    emprunts = emprunts.stream().filter(e -> e.getDateEmprunt().isEqual(date)).collect(Collectors.toList());
+                    break;
+                default:
+                    break; // Aucun filtrage, tout afficher
             }
-        
         } catch (NumberFormatException | DateTimeParseException ex) {
             JOptionPane.showMessageDialog(empruntView, "Erreur de format : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
         empruntView.updateEmpruntsTable(emprunts);
     }
+
 
     public void chargerEmprunts(String criteria) {
         List<Emprunt> emprunts = empruntModel.listerEmprunts(); // Récupérer tous les emprunts
@@ -107,10 +114,7 @@ public class EmpruntController {
         }
         empruntView.updateEmpruntsTable(emprunts);
     }
-    public int generateEmpruntId() {
-        // Logique pour générer un nouvel ID unique pour un emprunt
-        return empruntModel.listerEmprunts().size() + 1; // Exemple simple
-    }
+ 
     private int getSelectedEmpruntId() {
         int selectedRow = empruntView.getEmpruntTable().getSelectedRow();
         if (selectedRow == -1) {
@@ -150,5 +154,29 @@ public class EmpruntController {
     public void ajouterEmprunt(Emprunt emprunt) {
         empruntModel.ajouterEmprunt(emprunt); // Assurez-vous que cette méthode existe dans EmpruntDAO
         chargerEmprunts("Tous"); // Recharge la liste des emprunts après ajout
+    }  
+    
+ // Récupérer l'historique des emprunts d'un utilisateur
+    public List<Emprunt> getHistoriqueEmprunts(String userId) {
+        return empruntModel.listerEmprunts().stream()
+                .filter(emprunt -> emprunt.getUserId().equals(userId))
+                .collect(Collectors.toList());
     }
+
+    public int generateEmpruntId() {
+        // Logique pour générer un nouvel ID unique pour un emprunt
+        return empruntModel.listerEmprunts().size() + 1; // Exemple simple
+    }
+    public boolean hasActiveEmprunts(String userId) {
+        // Check if the user has any active loans
+        return empruntModel.listerEmprunts().stream()
+            .anyMatch(emprunt -> emprunt.getUserId().equals(userId) && !emprunt.isReturned());
+    }
+    
+    public boolean isUserActive(String userId) {
+        // Vérifie si l'utilisateur est actif
+        User user = userDAO.getUserById(userId);
+        return user != null && user.isActive(); // Assurez-vous que User a la méthode isActive
+    }
+
 }

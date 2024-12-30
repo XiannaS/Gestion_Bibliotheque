@@ -1,6 +1,8 @@
 package vue;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import model.Livre;
 
@@ -32,61 +34,132 @@ public class LivreView extends JPanel {
         livresTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         livresTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         livresTable.setRowHeight(30);
-        add(new JScrollPane(livresTable), BorderLayout.CENTER);
+
+        JPanel tableCard = new JPanel(new BorderLayout());
+        tableCard.setBorder(new TitledBorder(new LineBorder(Color.GRAY, 1, true), "Liste des Livres"));
+        tableCard.setBackground(null); // Pas de fond
+        tableCard.add(new JScrollPane(livresTable), BorderLayout.CENTER);
 
         // Panneau des détails du livre
-        JPanel detailsPanel = new JPanel();
-        detailsPanel.setLayout(new GridLayout(9, 2, 10, 10));
+        JPanel detailsCard = new JPanel(new GridBagLayout());
+        detailsCard.setBorder(new TitledBorder(new LineBorder(Color.GRAY, 1, true), "Détails du Livre"));
+        detailsCard.setBackground(null); // Pas de fond
 
-        detailsPanel.add(new JLabel("Titre :"));
-        titreField = new JTextField();
-        detailsPanel.add(titreField);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        detailsPanel.add(new JLabel("Auteur :"));
-        auteurField = new JTextField();
-        detailsPanel.add(auteurField);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        detailsCard.add(new JLabel("Titre :"), gbc);
 
-        detailsPanel.add(new JLabel("Genre :"));
-        genreField = new JTextField();
-        detailsPanel.add(genreField);
+        gbc.gridx = 1;
+        titreField = new JTextField(20); // Taille fixe
+        detailsCard.add(titreField, gbc);
 
-        detailsPanel.add(new JLabel("Année de publication :"));
-        anneePublicationField = new JTextField();
-        detailsPanel.add(anneePublicationField);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        detailsCard.add(new JLabel("Auteur :"), gbc);
 
-        detailsPanel.add(new JLabel("ISBN :"));
-        isbnField = new JTextField();
-        detailsPanel.add(isbnField);
+        gbc.gridx = 1;
+        auteurField = new JTextField(20); // Taille fixe
+        detailsCard.add(auteurField, gbc);
 
-        detailsPanel.add(new JLabel("Description :"));
-        descriptionField = new JTextField();
-        detailsPanel.add(descriptionField);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        detailsCard.add(new JLabel("Genre :"), gbc);
 
-        detailsPanel.add(new JLabel("Éditeur :"));
-        editeurField = new JTextField();
-        detailsPanel.add(editeurField);
+        gbc.gridx = 1;
+        genreField = new JTextField(20); // Taille fixe
+        detailsCard.add(genreField, gbc);
 
-        detailsPanel.add(new JLabel("Exemplaires :"));
-        exemplairesField = new JTextField();
-        detailsPanel.add(exemplairesField);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        detailsCard.add(new JLabel("Année de publication :"), gbc);
 
-        add(detailsPanel, BorderLayout.EAST);
+        gbc.gridx = 1;
+        anneePublicationField = new JTextField(20); // Taille fixe
+        detailsCard.add(anneePublicationField, gbc);
 
-        // Panneau des boutons
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(4, 1, 10, 10));
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        detailsCard.add(new JLabel("ISBN :"), gbc);
 
+        gbc.gridx = 1;
+        isbnField = new JTextField(20); // Taille fixe
+        detailsCard.add(isbnField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        detailsCard.add(new JLabel("Description :"), gbc);
+
+        gbc.gridx = 1;
+        descriptionField = new JTextField(20); // Taille fixe
+        detailsCard.add(descriptionField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        detailsCard.add(new JLabel("Éditeur :"), gbc);
+
+        gbc.gridx = 1;
+        editeurField = new JTextField(20); // Taille fixe
+        detailsCard.add(editeurField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        detailsCard.add(new JLabel("Exemplaires :"), gbc);
+
+        gbc.gridx = 1;
+        exemplairesField = new JTextField(20); // Taille fixe
+        detailsCard.add(exemplairesField, gbc);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0)); // Centré avec espacement vertical réduit
+        buttonPanel.setBackground(null); // Pas de fond
         ajouterButton = new JButton("Ajouter Livre");
         modifierButton = new JButton("Modifier Livre");
         supprimerButton = new JButton("Supprimer Livre");
         emprunterButton = new JButton("Emprunter Livre");
+
+        ajouterButton.setFocusPainted(false);
+        modifierButton.setFocusPainted(false);
+        supprimerButton.setFocusPainted(false);
+        emprunterButton.setFocusPainted(false);
+
+        ajouterButton.setBackground(new Color(60, 179, 113)); // Couleur personnalisée
+        modifierButton.setBackground(new Color(255, 165, 0)); // Couleur personnalisée
+        supprimerButton.setBackground(new Color(255, 69, 58)); // Couleur personnalisée
+        emprunterButton.setBackground(new Color(100, 149, 237)); // Couleur personnalisée
 
         buttonPanel.add(ajouterButton);
         buttonPanel.add(modifierButton);
         buttonPanel.add(supprimerButton);
         buttonPanel.add(emprunterButton);
 
-        add(buttonPanel, BorderLayout.SOUTH);
+        JPanel detailsContainer = new JPanel(new BorderLayout());
+        detailsContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        detailsContainer.setBackground(null); // Pas de fond
+        detailsContainer.add(detailsCard, BorderLayout.CENTER);
+        detailsContainer.add(buttonPanel, BorderLayout.NORTH); // Les boutons en haut
+
+        JPanel centerPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Marge autour des cartes
+        centerPanel.setBackground(null); // Pas de fond
+
+        // Réduire la taille des cartes
+        JPanel detailsCardWrapper = new JPanel(new BorderLayout());
+        detailsCardWrapper.add(detailsContainer, BorderLayout.CENTER);
+        detailsCardWrapper.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        detailsCardWrapper.setPreferredSize(new Dimension(300, 300)); // Taille réduite
+
+        JPanel tableCardWrapper = new JPanel(new BorderLayout());
+        tableCardWrapper.add(tableCard, BorderLayout.CENTER);
+        tableCardWrapper.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        tableCardWrapper.setPreferredSize(new Dimension(300, 300)); // Taille réduite
+
+        centerPanel.add(detailsCardWrapper);
+        centerPanel.add(tableCardWrapper);
+
+        add(centerPanel, BorderLayout.CENTER);
     }
 
     public void updateLivresTable(List<Livre> livres) {
@@ -151,13 +224,14 @@ public class LivreView extends JPanel {
         return descriptionField.getText();
     }
 
- public String getEditeur() {
+    public String getEditeur() {
         return editeurField.getText();
     }
 
     public int getExemplaires() {
         return Integer.parseInt(exemplairesField.getText());
     }
+
     public void setDetails(Livre livre) {
         titreField.setText(livre.getTitre());
         auteurField.setText(livre.getAuteur());
@@ -168,6 +242,7 @@ public class LivreView extends JPanel {
         editeurField.setText(livre.getEditeur());
         exemplairesField.setText(String.valueOf(livre.getTotalExemplaires()));
     }
+
     public void clearFields() {
         titreField.setText("");
         auteurField.setText("");
