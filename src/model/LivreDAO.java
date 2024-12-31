@@ -62,20 +62,23 @@ public class LivreDAO {
     }
 
     public void updateLivre(Livre livre) {
-        List<Livre> livres = getAllLivres();
+        List<Livre> livres = getAllLivres(); // Chargez tous les livres
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
             for (Livre l : livres) {
                 if (l.getId() == livre.getId()) {
-                    bw.write(livre.toString() + ";" + livre.getExemplairesDisponibles());
+                    // Mettez à jour le livre dans le fichier en ajoutant le nombre d'exemplaires
+                    bw.write(livre.toString() + ";" + livre.getExemplairesDisponibles()); // Ajoutez le nombre d'exemplaires disponibles ici
                 } else {
-                    bw.write(l.toString() + ";" + l.getExemplairesDisponibles());
+                    // Pour les autres livres, vous écrivez simplement leurs informations
+                    bw.write(l.toString() + ";" + l.getExemplairesDisponibles()); 
                 }
-                bw.newLine();
+                bw.newLine(); // Ajouter un saut de ligne après chaque livre
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     public void deleteLivre(int id) {
         List<Livre> livres = getAllLivres();  // Récupère tous les livres

@@ -14,16 +14,17 @@ public class EmpruntDAO {
 
     public EmpruntDAO(String csvFileName) {
         this.csvFileName = csvFileName;
-        lireCSV();
+        lireCSV(); // Charge les emprunts depuis le fichier CSV
+        System.out.println("Nombre d'emprunts chargés : " + emprunts.size()); // Vérification du nombre d'emprunts
     }
-
     // Ajouter un nouvel emprunt
     public void ajouterEmprunt(Emprunt emprunt) {
+        System.out.println("Tentative d'ajout d'un emprunt. Nombre d'emprunts avant ajout : " + emprunts.size());
         emprunt.setId(nextId++);  // Assigner un ID unique à l'emprunt
         emprunts.add(emprunt);     // Ajouter l'emprunt à la liste
-        sauvegarderCSV();         // Sauvegarder les emprunts dans le fichier CSV
+        sauvegarderCSV();          // Sauvegarder les emprunts dans le fichier CSV
+        System.out.println("Emprunt ajouté. Nombre d'emprunts après ajout : " + emprunts.size());
     }
-
 
     // Retourner un livre par ID d'emprunt
     public void retournerLivre(int empruntId) {

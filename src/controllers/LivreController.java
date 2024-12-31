@@ -102,7 +102,6 @@ public class LivreController {
         }
     }
 
-  
     public void modifierLivre() {
         int selectedIndex = livreView.getLivresTable().getSelectedRow();
 
@@ -119,7 +118,7 @@ public class LivreController {
                 String nouvelIsbn = livreView.getIsbn();
                 String nouvelleDescription = livreView.getDescription();
                 String nouvelEditeur = livreView.getEditeur();
-                int nouveauxExemplaires = livreView.getExemplaires();
+                int nouveauxExemplaires = livreView.getExemplaires(); // Le nouveau nombre d'exemplaires
 
                 // Vérifier si l'année de publication est valide
                 if (anneePublication < 0) {
@@ -142,7 +141,9 @@ public class LivreController {
                 livre.setIsbn(nouvelIsbn);
                 livre.setDescription(nouvelleDescription);
                 livre.setEditeur(nouvelEditeur);
-                livre.setTotalExemplaires(nouveauxExemplaires);
+
+                // Mettre à jour le nombre d'exemplaires disponibles
+                livre.setTotalExemplaires(nouveauxExemplaires); // Mettez à jour les exemplaires
 
                 // Mettre à jour le livre dans le DAO
                 livreDAO.updateLivre(livre);
@@ -164,6 +165,7 @@ public class LivreController {
             JOptionPane.showMessageDialog(livreView, "Veuillez sélectionner un livre à modifier.", "Avertissement", JOptionPane.WARNING_MESSAGE);
         }
     }
+
 
 	
 	public void supprimerLivre() {
@@ -214,25 +216,23 @@ public class LivreController {
 	                Livre livre = livreDAO.getAllLivres().get(selectedIndex);
 
 	                // Vérifier si l'utilisateur a déjà emprunté ce livre
+	                System.out.println("Vérification des emprunts actifs de l'utilisateur...");
 	                if (empruntController.hasActiveEmpruntForUser (userIdStr, livre.getId())) {
 	                    JOptionPane.showMessageDialog(livreView, "Vous avez déjà emprunté ce livre.", "Erreur", JOptionPane.ERROR_MESSAGE);
 	                    return;
 	                }
 
-	                // Vérification du nombre d'exemplaires disponibles via la méthode DAO
-	                int exemplairesDisponibles = livreDAO.getExemplairesDisponibles(livre);
-	                if (exemplairesDisponibles <= 0) {
-	                    JOptionPane.showMessageDialog(livreView, "Ce livre n'est pas disponible pour emprunt.", "Avertissement", JOptionPane.WARNING_MESSAGE);
-	                    return;
-	                }
-
+	             
+	                System.out.println("Le livre est disponible, mise à jour...");
 	                // Si le livre est disponible
-	                livre.emprunter(); // Mettre à jour le nombre d'exemplaires disponibles du livre
+	                livre.emprunter();
+	                // Mettre à jour le nombre d'exemplaires disponibles du livre
 	                livreDAO.updateLivre(livre); // Mettre à jour le livre dans le DAO
-
+	              
 	                // Créer un nouvel emprunt
 	                Emprunt emprunt = new Emprunt(empruntController.generateEmpruntId(), livre.getId(), userIdStr, LocalDate.now(),
 	                        LocalDate.now().plusDays(7), null, false, 0);
+	                
 	                empruntController.ajouterEmprunt(emprunt);
 
 	                loadAndDisplayBooks();
