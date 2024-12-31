@@ -3,6 +3,7 @@ package vue;
 import controllers.EmpruntController;
 import controllers.LivreController;
 import controllers.UserController;
+import controllers.DashboardController; // Importer le DashboardController
 import model.UserDAO;
 
 import javax.swing.*;
@@ -31,11 +32,14 @@ public class BibliothequeApp extends JFrame {
         LivreView livreView = new LivreView();
         EmpruntView empruntView = new EmpruntView();
         UserView userView = new UserView(); 
+        DashboardView dashboardView = new DashboardView(); // Initialisation de la vue du dashboard
+
         // Initialisation des contrôleurs
         EmpruntController empruntController = null;
         LivreController livreController = null;
         UserController userController = null;
         UserDAO userDAO = new UserDAO("src/resources/users.csv");
+
         // Chargement des contrôleurs et gestion des exceptions pour chaque
         try {
             empruntController = new EmpruntController(empruntView,
@@ -54,10 +58,11 @@ public class BibliothequeApp extends JFrame {
         }
 
         try {
-            userController = new UserController( userView, userDAO);
+            userController = new UserController(userView, userDAO);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des utilisateurs : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
+
         // Création du panneau d'onglets
         tabbedPane = new JTabbedPane();
 
@@ -67,23 +72,6 @@ public class BibliothequeApp extends JFrame {
         }
 
         if (userController != null) {
-          
-            tabbedPane.addTab("Utilisateurs", userView);
-        }
-
-        if (empruntController != null) {
-            tabbedPane.addTab("Emprunts", empruntView);
-        }
-        // Création du panneau d'onglets
-        tabbedPane = new JTabbedPane();
-
-        // Vérification de l'initialisation des contrôleurs avant d'ajouter des vues
-        if (livreController != null) {
-            tabbedPane.addTab("Livres", livreView);
-        }
-
-        if (userController != null) {
-           
             tabbedPane.addTab("Utilisateurs", userView);
         }
 
@@ -91,6 +79,12 @@ public class BibliothequeApp extends JFrame {
             tabbedPane.addTab("Emprunts", empruntView);
         }
 
+        // Ajouter le dashboard
+        if (dashboardView != null) {
+            DashboardController dashboardController = new DashboardController(dashboardView, empruntController, livreController, userController);
+            tabbedPane.addTab("Dashboard", dashboardView);
+        }
+    
         // Créer un JPanel pour le header avec des icônes
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));  // Alignement à droite pour les icônes
@@ -108,6 +102,7 @@ public class BibliothequeApp extends JFrame {
                 .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
         profileButton = new JButton(profileIcon);
         profileButton.setToolTipText("Profil");
+        profileButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
         profileButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
         profileButton.addActionListener(this::onProfileClicked);
         headerPanel.add(profileButton);
@@ -146,28 +141,25 @@ public class BibliothequeApp extends JFrame {
      * @param event L'événement de clic
      */
     private void toggleTheme(ActionEvent event) {
-        try {
-            if (isDarkMode) {
+        if (isDarkMode) {
+            try {
                 UIManager.setLookAndFeel(new FlatLightLaf());
-            } else {
-                UIManager.setLookAndFeel(new FlatDraculaIJTheme());
+            } catch (UnsupportedLookAndFeelException e) {
+                e.printStackTrace();
             }
-            // Mettre à jour l'interface graphique
-            SwingUtilities.updateComponentTreeUI(this);
-            isDarkMode = !isDarkMode; // Update the mode after changing the look and feel
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
+        } else {
+            try {
+                UIManager.setLookAndFeel(new FlatDraculaIJTheme());
+            } catch (UnsupportedLookAndFeelException e) {
+                e.printStackTrace();
+            }
         }
+        // Mettre à jour l'interface graphique
+        SwingUtilities.updateComponentTreeUI(this);
+        isDarkMode = !isDarkMode;
     }
-    
-    public static void main(String[] args) {
-        // Définir le look and feel par défaut
-        try {
-            UIManager.setLookAndFeel(new FlatLightLaf()); // ou FlatDraculaIJTheme() pour le mode sombre
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
 
+    public static void main(String[] args) {
         // Assurez-vous de lancer l'UI sur le thread de l'Event Dispatching (EDT)
         SwingUtilities.invokeLater(() -> {
             new BibliothequeApp().setVisible(true);

@@ -12,7 +12,6 @@ import javax.swing.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
@@ -33,7 +32,9 @@ public class EmpruntController {
         chargerEmprunts("Tous");
         
     }
-    
+    public List<Emprunt> getEmprunts() {
+        return empruntModel.listerEmprunts(); // Retourne la liste des emprunts
+    }
     public boolean hasActiveEmpruntsForBook(int livreId) {
         return empruntModel.listerEmprunts().stream()
                 .anyMatch(emprunt -> emprunt.getLivreId() == livreId && !emprunt.isRendu());

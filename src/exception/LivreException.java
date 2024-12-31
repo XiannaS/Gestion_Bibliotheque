@@ -1,7 +1,14 @@
 package exception;
 
 public class LivreException extends Exception {
-    public LivreException(String message) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+
+
+	public LivreException(String message) {
         super(message);
     }
 
@@ -9,7 +16,12 @@ public class LivreException extends Exception {
 
     // Exception pour l'année de publication invalide
     public static class InvalidYearException extends LivreException {
-        public InvalidYearException(String message) {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public InvalidYearException(String message) {
             super(message);
         }
     }
@@ -18,7 +30,12 @@ public class LivreException extends Exception {
 
     // Exception pour les livres non disponibles
     public static class LivreNonDisponibleException extends LivreException {
-        public LivreNonDisponibleException(String message) {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public LivreNonDisponibleException(String message) {
             super(message);
         }
     }

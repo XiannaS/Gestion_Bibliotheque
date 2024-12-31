@@ -10,7 +10,11 @@ import java.awt.*;
 import java.util.List;
 
 public class LivreView extends JPanel {
-    private JTable livresTable;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JTable livresTable;
     private DefaultTableModel tableModel;
     private JButton ajouterButton;
     private JButton modifierButton;
@@ -24,7 +28,9 @@ public class LivreView extends JPanel {
     private JTextField descriptionField;
     private JTextField editeurField;
     private JTextField exemplairesField;
-
+    private JTextField searchField;
+    private JButton searchButton;
+    private JComboBox<String> searchComboBox;
     public LivreView() {
         setLayout(new BorderLayout());
 
@@ -141,7 +147,17 @@ public class LivreView extends JPanel {
         detailsContainer.setBackground(null); // Pas de fond
         detailsContainer.add(detailsCard, BorderLayout.CENTER);
         detailsContainer.add(buttonPanel, BorderLayout.NORTH); // Les boutons en haut
-
+        // Panneau de recherche
+        JPanel searchPanel = new JPanel(new FlowLayout());
+        searchField = new JTextField(20);
+        searchButton = new JButton("Rechercher");
+        searchComboBox = new JComboBox<>(new String[]{"Titre", "Auteur", "Genre", "ISBN"});
+        searchPanel.add(new JLabel("Rechercher par :"));
+        searchPanel.add(searchComboBox);
+        searchPanel.add(searchField);
+        searchPanel.add(searchButton);
+        add(searchPanel, BorderLayout.NORTH);
+    
         JPanel centerPanel = new JPanel(new GridLayout(1, 2, 10, 10));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Marge autour des cartes
         centerPanel.setBackground(null); // Pas de fond
@@ -256,4 +272,9 @@ public class LivreView extends JPanel {
         editeurField.setText("");
         exemplairesField.setText("");
     }
+
+ // Ajout des getters pour les nouveaux composants de recherche
+    public JTextField getSearchField() { return searchField; } 
+    public JButton getSearchButton() { return searchButton; } 
+    public JComboBox<String> getSearchComboBox() { return searchComboBox; }
 }

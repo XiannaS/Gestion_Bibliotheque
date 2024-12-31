@@ -1,7 +1,5 @@
 package vue;
 
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLightLaf;
 import model.Role;
 import model.User;
 
@@ -154,7 +152,12 @@ public class UserView extends JPanel {
         String[] columnNames = {"ID", "Nom", "Prénom", "Email", "Numéro de téléphone", "Rôle", "Statut"};
         tableModel = new DefaultTableModel(columnNames, 0);
         userTable = new JTable(tableModel) {
-            @Override
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
             public boolean isCellEditable(int row, int column) {
                 return false; // Rendre les cellules non éditables
             }

@@ -3,8 +3,6 @@ package model;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import exception.UserException;
 public class UserDAO {
     private String filePath;
@@ -84,24 +82,6 @@ public class UserDAO {
         }
     }
 
-
-    private void updateUserInFile(List<User> users, User userToUpdate) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
-            for (User u : users) {
-                if (u.getId().equals(userToUpdate.getId())) {
-                    bw.write(String.join(",", userToUpdate.getId(), userToUpdate.getNom(), userToUpdate.getPrenom(),
-                            userToUpdate.getEmail(), userToUpdate.getNumeroTel(), userToUpdate.getMotDePasse(),
-                            userToUpdate.getRole().name(), String.valueOf(userToUpdate.isStatut())));
-                } else {
-                    bw.write(String.join(",", u.getId(), u.getNom(), u.getPrenom(), u.getEmail(),
-                            u.getNumeroTel(), u.getMotDePasse(), u.getRole().name(), String.valueOf(u.isStatut())));
-                }
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public void deleteUser(String id) throws IOException {
         List<User> users = getAllUsers();

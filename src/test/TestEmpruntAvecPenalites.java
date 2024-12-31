@@ -4,8 +4,6 @@ import model.*;
 import vue.EmpruntView;
 import vue.LivreView;
 import controllers.*;
-import exception.UserException;
-import java.time.LocalDate;
 
 public class TestEmpruntAvecPenalites {
     public static void main(String[] args) {

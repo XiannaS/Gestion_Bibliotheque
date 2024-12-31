@@ -146,7 +146,14 @@ private void rechercherUtilisateurs() {
         }
     }
 
-
+    public int getNombreUtilisateursInactifs() {
+        return (int) userDAO.getAllUsers().stream().filter(user -> !user.isStatut()).count();
+    }
+    // Méthode pour obtenir le nombre d'utilisateurs actifs
+    public int getNombreUtilisateursActifs() {
+        return (int) userDAO.getAllUsers().stream().filter(User::isStatut).count();  // Compte les utilisateurs dont le statut est actif (statut = true)
+    }
+ 
     public void displayUsers() {
         List<User> users = userDAO.getAllUsers();
         userView.displayUsers(users);

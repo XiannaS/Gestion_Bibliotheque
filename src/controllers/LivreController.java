@@ -11,6 +11,8 @@ import javax.swing.*;
 import exception.LivreException;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class LivreController {
     private LivreView livreView;
@@ -28,6 +30,7 @@ public class LivreController {
         loadAndDisplayBooks();
 
         // Ajouter des écouteurs d'événements
+        livreView.getSearchButton().addActionListener(e -> rechercherLivres());
         livreView.getAjouterButton().addActionListener(e -> ajouterLivre());
         livreView.getModifierButton().addActionListener(e -> modifierLivre());
         livreView.getSupprimerButton().addActionListener(e -> supprimerLivre());
@@ -39,7 +42,31 @@ public class LivreController {
         });
     }
 
-    public void loadAndDisplayBooks() {
+    public void rechercherLivres() {
+        String searchTerm = livreView.getSearchField().getText().trim();
+        String searchType = (String) livreView.getSearchComboBox().getSelectedItem();
+
+        List<Livre> livres = livreDAO.getAllLivres().stream()
+            .filter(livre -> {
+                switch (searchType) {
+                    case "Titre":
+                        return livre.getTitre().toLowerCase().contains(searchTerm.toLowerCase());
+                    case "Auteur":
+                        return livre.getAuteur().toLowerCase().contains(searchTerm.toLowerCase());
+                    case "Genre":
+                        return livre.getGenre().toLowerCase().contains(searchTerm.toLowerCase());
+                    case "ISBN":
+                        return livre.getIsbn().toLowerCase().contains(searchTerm.toLowerCase());
+                    default:
+                        return false;
+                }
+            })
+            .collect(Collectors.toList());
+
+        livreView.updateLivresTable(livres);
+    }
+
+	public void loadAndDisplayBooks() {
         // Charger les livres et les afficher dans la vue
         livreView.updateLivresTable(livreDAO.getAllLivres());
     }
@@ -222,7 +249,15 @@ public class LivreController {
 	                    return;
 	                }
 
-	             
+	                // Vérification du nombre d'exemplaires disponibles via la méthode DAO
+	              //  System.out.println("Vérification des exemplaires disponibles...");
+	            //   int exemplairesDisponibles = livreDAO.getExemplairesDisponibles(livre);
+	                
+	               // if (exemplairesDisponibles <= 0) {
+	                 //   JOptionPane.showMessageDialog(livreView, "Ce livre n'est pas disponible pour emprunt.", "Avertissement", JOptionPane.WARNING_MESSAGE);
+	                  //  return;
+	               // }
+	                
 	                System.out.println("Le livre est disponible, mise à jour...");
 	                // Si le livre est disponible
 	                livre.emprunter();
@@ -256,12 +291,28 @@ public class LivreController {
 	    }
 	}
 
+	// Méthode pour récupérer un livre par son ID dans LivreController
+	public Livre getLivreById(int id) {
+	    // Assurez-vous de parcourir correctement la liste des livres et de retourner null si aucun livre n'est trouvé
+	    for (Livre livre : livreDAO.getAllLivres()) {
+	        if (livre.getId() == id) {
+	            return livre;
+	        }
+	    }
+	    return null;  // Aucun livre trouvé avec cet ID
+	}
+
 
     
     private int generateId() {
         // Logique pour générer un nouvel ID unique pour un livre
         return livreDAO.getAllLivres().size() + 1; // Exemple simple
     }
+
+    public List<Livre> getAllLivres() {
+        return livreDAO.getAllLivres(); // Si cette méthode existe dans le DAO
+    }
+
 
 
 }

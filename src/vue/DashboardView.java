@@ -1,259 +1,210 @@
 package vue;
 
-import controllers.EmpruntController;
-import controllers.LivreController;
-import controllers.UserController;
-import model.Emprunt;
-import model.Livre;
-import model.User;
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.PieDataset;
 import org.jfree.data.general.DefaultPieDataset;
-import java.util.List; 
-import javax.swing.*;
-import java.awt.*;
-import java.time.LocalDate;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 public class DashboardView extends JPanel {
     private static final long serialVersionUID = 1L;
-    private LivreController livreController;
-    private UserController userController;
-    private EmpruntController empruntController;
 
-    public DashboardView(LivreController livreController, UserController userController, EmpruntController empruntController) {
-        this.livreController = livreController;
-        this.userController = userController;
-        this.empruntController = empruntController;
+    // Panneau pour les statistiques
+    private JPanel statsPanel;
 
-        setLayout(new BorderLayout());
-        setBackground(Color.DARK_GRAY);
+    // Panneau pour les graphiques
+    private JPanel chartPanel;
 
-        // Panneau supérieur avec le label de bienvenue
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.DARK_GRAY);
-        JLabel welcomeLabel = new JLabel("Bienvenue dans le Tableau de Bord", JLabel.CENTER);
-        welcomeLabel.setForeground(Color.WHITE);
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        topPanel.add(welcomeLabel, BorderLayout.CENTER);
-        add(topPanel, BorderLayout.NORTH);
+    // Bouton pour rafraîchir les données
+    private JButton refreshButton;
 
-        // Panneau principal pour les statistiques et graphiques
-        JPanel mainPanel = new JPanel(new GridLayout(1, 2));
-        mainPanel.setBackground(Color.DARK_GRAY);
+    // Menu déroulant pour les filtres (par exemple, choisir un mois pour afficher les statistiques)
+    private JComboBox<String> filterComboBox;
 
-        // Panneau des statistiques
-        JPanel statsPanel = new JPanel();
-        statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.Y_AXIS));
-        statsPanel.setBackground(Color.DARK_GRAY);
-        statsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    // Filtres avancés
+    private JComboBox<String> genreComboBox;
+    private JComboBox<String> periodComboBox;
+    private JComboBox<String> userComboBox;
 
-        JLabel statsLabel = new JLabel("Statistiques");
-        statsLabel.setForeground(Color.WHITE);
-        statsLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        statsPanel.add(statsLabel);
+    public DashboardView() {
+        setLayout(new BorderLayout(15, 15)); // Espacement entre les composants
+        setBackground(new Color(0xEAEAEA)); // Couleur de fond du Dashboard
 
-        JTextArea statsArea = new JTextArea();
-        statsArea.setEditable(false);
-        statsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        statsArea.setBackground(Color.LIGHT_GRAY);
-        statsArea.setForeground(Color.BLACK);
-        statsPanel.add(new JScrollPane(statsArea));
-        mainPanel.add(statsPanel);
+        // Initialisation du panneau des statistiques
+        statsPanel = new JPanel(new GridLayout(1, 3, 10, 0));  // GridLayout avec un espacement
+        statsPanel.setBackground(new Color(0xEAEAEA)); // Fond clair pour plus de contraste
+        add(createCard(statsPanel, "Statistiques"), BorderLayout.NORTH);
 
-        // Panneau des graphiques
-        JPanel chartPanel = new JPanel(new GridLayout(2, 1));
-        chartPanel.setBackground(Color.DARK_GRAY);
-        JFreeChart barChart = createBooksChart();
-        ChartPanel barChartPanel = new ChartPanel(barChart);
-        chartPanel.add(barChartPanel);
+        // Initialisation du panneau des graphiques
+        chartPanel = new JPanel(new GridLayout(1, 2, 10, 10));  // Deux graphiques côte à côte
+        chartPanel.setBackground(new Color(0xEAEAEA)); // Fond clair pour plus de contraste
+        add(createCard(chartPanel, "Graphiques"), BorderLayout.CENTER);
 
-        JFreeChart pieChart = createUsersPieChart();
-        ChartPanel pieChartPanel = new ChartPanel(pieChart);
-        chartPanel.add(pieChartPanel);
-        mainPanel.add(chartPanel);
+        // Panneau inférieur pour les contrôles
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        controlPanel.setBackground(new Color(0xEAEAEA)); // Fond clair
 
-        add(mainPanel, BorderLayout.CENTER);
+        // Menu déroulant pour filtrer les statistiques (ex. filtrer par mois)
+        filterComboBox = new JComboBox<>(new String[]{"Tous", "Janvier", "Février", "Mars", "Avril"});
+        filterComboBox.setFont(new Font("Arial", Font.PLAIN, 12));
+        filterComboBox.setPreferredSize(new Dimension(150, 30));
+        filterComboBox.setBackground(Color.WHITE);
+        controlPanel.add(filterComboBox);
 
-        // Afficher les statistiques textuelles
-        afficherStatistiques(statsArea);
+        // Filtres avancés
+        genreComboBox = new JComboBox<>(new String[]{"Tous les genres", "Roman", "Science-fiction", "Biographie"});
+        genreComboBox.setFont(new Font("Arial", Font.PLAIN, 12));
+        genreComboBox.setPreferredSize(new Dimension(150, 30));
+        genreComboBox.setBackground(Color.WHITE);
+        controlPanel.add(genreComboBox);
 
-        // Panneau inférieur pour les listes récentes
-        JPanel bottomPanel = new JPanel(new GridLayout(1, 2));
-        bottomPanel.setBackground(Color.DARK_GRAY);
-        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        periodComboBox = new JComboBox<>(new String[]{"Tout le temps", "Cette année", "Ce mois"});
+        periodComboBox.setFont(new Font("Arial", Font.PLAIN, 12));
+        periodComboBox.setPreferredSize(new Dimension(150, 30));
+        periodComboBox.setBackground(Color.WHITE);
+        controlPanel.add(periodComboBox);
 
-        JPanel recentBooksPanel = createRecentBooksPanel();
-        JPanel recentUsersPanel = createRecentUsersPanel();
+        userComboBox = new JComboBox<>(new String[]{"Tous les utilisateurs", "Utilisateur 1", "Utilisateur 2"});
+        userComboBox.setFont(new Font("Arial", Font.PLAIN, 12));
+        userComboBox.setPreferredSize(new Dimension(150, 30));
+        userComboBox.setBackground(Color.WHITE);
+        controlPanel.add(userComboBox);
 
-        bottomPanel.add(recentBooksPanel);
-        bottomPanel.add(recentUsersPanel);
-        add(bottomPanel, BorderLayout.SOUTH);
+        // Bouton pour rafraîchir les graphiques
+        refreshButton = new JButton("Rafraîchir");
+        refreshButton.setBackground(new Color(0x4CAF50));  // Vert moderne
+        refreshButton.setForeground(Color.WHITE);
+        refreshButton.setFocusPainted(false);
+        refreshButton.setFont(new Font("Arial", Font.BOLD, 14));
+        controlPanel.add(refreshButton);
+
+        add(controlPanel, BorderLayout.SOUTH);
     }
-    private void afficherRappels(JTextArea statsArea) {
-        StringBuilder rappels = new StringBuilder();
-        rappels.append("=== Rappels ===\n");
 
-        // Date actuelle
-        LocalDate today = LocalDate.now();
+    // Méthode pour créer une carte avec un panneau intérieur et un titre
+    private JPanel createCard(JPanel innerPanel, String title) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(0xCCCCCC), 1, true), title));
+        card.add(innerPanel, BorderLayout.CENTER);
+        return card;
+    }
 
-        // Récupérer tous les emprunts
-        List<Emprunt> emprunts = empruntController.listerEmprunts();
+    // Mise à jour des statistiques affichées
+    public void updateStats(String totalBooks, String activeUsers, String totalLoans) {
+        statsPanel.removeAll();
+        statsPanel.add(createStatPanel("Total de Livres", totalBooks));
+        statsPanel.add(createStatPanel("Utilisateurs Actifs", activeUsers));
+        statsPanel.add(createStatPanel("Emprunts Actifs", totalLoans));
+        statsPanel.revalidate();
+        statsPanel.repaint();
+    }
 
-        // Vérifier les emprunts en retard et ceux dont la date de retour est proche
-        for (Emprunt emprunt : emprunts) {
-            if (!emprunt.isRendu()) {
-                LocalDate dateRetourPrevue = emprunt.getDateRetourPrevue();
-                if (dateRetourPrevue.isBefore(today)) {
-                    rappels.append("Emprunt en retard : Livre ID ").append(emprunt.getLivreId())
-                            .append(", Utilisateur ID ").append(emprunt.getUserId())
-                            .append(", Date de retour prévue : ").append(dateRetourPrevue).append("\n");
-                } else if (dateRetourPrevue.isEqual(today.plusDays(3)) || dateRetourPrevue.isBefore(today.plusDays(3))) {
-                    rappels.append("Rappel : Livre ID ").append(emprunt.getLivreId())
-                            .append(", Utilisateur ID ").append(emprunt.getUserId())
-                            .append(", Date de retour prévue : ").append(dateRetourPrevue).append("\n");
-                }
-            }
+    // Méthode pour générer un panneau de statistiques (détail d'un chiffre)
+    private JPanel createStatPanel(String title, String value) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(0xFFFFFF));
+        panel.setBorder(BorderFactory.createTitledBorder(title));
+        JLabel valueLabel = new JLabel(value, SwingConstants.CENTER);
+        valueLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        panel.add(valueLabel, BorderLayout.CENTER);
+        return panel;
+    }
+
+    // Définir le graphique à afficher
+    public void setChart(JComponent chart) {
+        chartPanel.removeAll();
+        chartPanel.add(chart);
+        chartPanel.revalidate();
+        chartPanel.repaint();
+    }
+
+    // Retourne le bouton de rafraîchissement pour le controller
+    public JButton getRefreshButton() {
+        return refreshButton;
+    }
+
+    // Retourne le menu de filtrage pour les statistiques
+    public JComboBox<String> getFilterComboBox() {
+        return filterComboBox;
+    }
+
+    // Retourne le menu de filtrage pour les genres
+    public JComboBox<String> getGenreComboBox() {
+        return genreComboBox;
+    }
+
+    // Retourne le menu de filtrage pour les périodes
+    public JComboBox<String> getPeriodComboBox() {
+        return periodComboBox;
+    }
+
+    // Retourne le menu de filtrage pour les utilisateurs
+    public JComboBox<String> getUserComboBox() {
+        return userComboBox;
+    }
+
+    // Méthode pour créer un graphique en barres
+    public JComponent createBarChart(List<String> bookTitles, List<Integer> borrowCounts) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        for (int i = 0; i < bookTitles.size(); i++) {
+            dataset.addValue(borrowCounts.get(i), "Emprunts", bookTitles.get(i));
         }
 
-        statsArea.append(rappels.toString());
-    }
-
-    private JFreeChart createBooksChart() {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-        // Calcul des livres les plus empruntés
-        Map<Integer, Long> empruntsParLivre = empruntController.listerEmprunts().stream()
-                .collect(Collectors.groupingBy(Emprunt::getLivreId, Collectors.counting()));
-
-        // Trier les livres par nombre d'emprunts
-        empruntsParLivre.entrySet().stream()
-                .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
-                .limit(5)
-                .forEach(e -> {
-                    Livre livre = empruntController.getEntityById(String.valueOf(e.getKey()), "Livre");
-                    if (livre != null) {
-                        dataset.addValue(e.getValue(), "Emprunts", livre.getTitre());
-                    }
-                });
-
-        // Créer le graphique
-        return ChartFactory.createBarChart(
-                "Top 5 des livres les plus empruntés",
+        JFreeChart barChart = ChartFactory.createBarChart(
+                "Emprunts par Livre",
                 "Livre",
-                "Nombre d'emprunts",
+                "Nombre d'Emprunts",
                 dataset
         );
+
+        return new ChartPanel(barChart);
     }
 
-    private JFreeChart createUsersPieChart() {
-        DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
+    // Méthode pour créer un graphique linéaire (par exemple, Emprunts au fil du temps)
+    public JComponent createLineChart(List<Integer> months, List<Integer> borrowCounts) {
+        XYSeries series = new XYSeries("Emprunts Mensuels");
+        for (int i = 0; i < months.size(); i++) {
+            series.add(months.get(i), borrowCounts.get(i));
+        }
 
-        // Calcul des utilisateurs les plus actifs
-        Map<String, Long> empruntsParUser   = empruntController.listerEmprunts().stream()
-                .collect(Collectors.groupingBy(emprunt -> String.valueOf(emprunt.getUserId()), Collectors.counting()));
+        XYSeriesCollection dataset = new XYSeriesCollection(series);
+        JFreeChart lineChart = ChartFactory.createXYLineChart(
+                "Emprunts Mensuels",
+                "Mois",
+                "Emprunts",
+                dataset
+        );
 
-        // Ajouter les données au dataset
-        empruntsParUser .forEach((userId, count) -> {
-            User user = empruntController.getEntityById(userId, "User"); // Assurez-vous qu'il n'y a pas d'espace
-            if (user != null) {
-                dataset.setValue(user.getNom() + " " + user.getPrenom(), count);
-            } else {
-                System.out.println("Utilisateur non trouvé pour l'ID : " + userId); // Journaliser si l'utilisateur n'est pas trouvé
-            }
-        });
+        return new ChartPanel(lineChart);
+    }
 
-        // Créer le graphique
-        return ChartFactory.createPieChart(
-                "Répartition des utilisateurs actifs",
+    // Méthode pour créer un graphique circulaire (pourcentage des livres empruntés)
+    public JComponent createPieChart(List<String> categories, List<Integer> values) {
+        PieDataset dataset = createPieDataset(categories, values);
+        JFreeChart pieChart = ChartFactory.createPieChart(
+                "Distribution des Emprunts",
                 dataset,
-                true, true, false);
-    }
-    private void afficherStatistiques(JTextArea statsArea) {
-        StringBuilder stats = new StringBuilder();
-        stats.append("=== Tableau de Bord ===\n");
-        stats.append("Total des livres : ").append(livreController.getAllLivres().size()).append("\n");
-        stats.append("Total des utilisateurs : ").append(userController.getAllUsers().size()).append("\n");
-        stats.append("Total des emprunts : ").append(empruntController.listerEmprunts().size()).append("\n");
-        stats.append("Livres disponibles : ").append(livreController.getAllLivres().stream().filter(Livre::isDisponible).count()).append("\n");
-        stats.append("Livres non disponibles : ").append(livreController.getAllLivres().stream().filter(livre -> !livre.isDisponible()).count()).append("\n");
+                true,
+                true,
+                false
+        );
 
-        // Utilisateurs les plus actifs
-        stats.append("Utilisateurs les plus actifs :\n");
-        empruntController.listerEmprunts().stream()
-                .collect(Collectors.groupingBy(Emprunt::getUserId, Collectors.counting()))
-                .entrySet().stream()
-                .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
-                .limit(5)
-                .forEach(e -> {
-                    User user = empruntController.getEntityById(String.valueOf(e.getKey()), "User");
-                    if (user != null) {
-                        stats.append(" - ").append(user.getNom()).append(" ").append(user.getPrenom()).append("\n");
-                    }
-                });
-
-        statsArea.setText(stats.toString());
-
-        // Afficher les rappels
-        afficherRappels(statsArea);
+        return new ChartPanel(pieChart);
     }
 
-    private JPanel createRecentBooksPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.DARK_GRAY);
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        JLabel titleLabel = new JLabel("Livres Récemment Ajoutés");
-        titleLabel.setForeground(Color.WHITE);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        panel.add(titleLabel, BorderLayout.NORTH);
-
-        JTextArea textArea = new JTextArea();
-        textArea.setEditable(false);
-        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        textArea.setBackground(Color.LIGHT_GRAY);
-        textArea.setForeground(Color.BLACK);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        StringBuilder recentBooks = new StringBuilder();
-        livreController.getAllLivres().stream()
-                .limit(5)
-                .forEach(livre -> recentBooks.append(livre.getTitre()).append(" par ").append(livre.getAuteur()).append("\n"));
-
-        textArea.setText(recentBooks.toString());
-
-        return panel;
-    }
-
-    private JPanel createRecentUsersPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.DARK_GRAY);
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        JLabel titleLabel = new JLabel("Utilisateurs Récemment Ajoutés");
-        titleLabel.setForeground(Color.WHITE);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        panel.add(titleLabel, BorderLayout.NORTH);
-
-        JTextArea textArea = new JTextArea(); // Déclarez textArea ici
-        textArea.setEditable(false);
-        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        textArea.setBackground(Color.LIGHT_GRAY);
-        textArea.setForeground(Color.BLACK);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        StringBuilder recentUsers = new StringBuilder();
-        userController.getAllUsers().stream()
-                .limit(5)
-                .forEach(user -> recentUsers.append(user.getNom()).append(" ").append(user.getPrenom()).append("\n"));
-
-        textArea.setText(recentUsers.toString());
-
-        return panel;
+    // Créer un dataset pour le graphique circulaire
+    private PieDataset createPieDataset(List<String> categories, List<Integer> values) {
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        for (int i = 0; i < categories.size(); i++) {
+            dataset.setValue(categories.get(i), values.get(i));
+        }
+        return dataset;
     }
 }
