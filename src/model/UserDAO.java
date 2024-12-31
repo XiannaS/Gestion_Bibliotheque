@@ -1,5 +1,5 @@
 package model;
-
+import org.mindrot.jbcrypt.BCrypt;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -173,5 +173,25 @@ public class UserDAO {
                 .findFirst()
                 .orElse(null);
     }
+
+   
+
+    public User authenticate(String email, String motDePasse) {
+        for (User user : getAllUsers()) {
+            System.out.println("Vérification de l'utilisateur : " + user.getEmail());  // Log pour vérifier chaque utilisateur
+            if (user.getEmail().equals(email) && user.isStatut()) {  // Vérification de l'email et du statut
+                System.out.println("Email et statut OK");
+                // Vérification du mot de passe
+                if (BCrypt.checkpw(motDePasse, user.getMotDePasse())) {
+                    System.out.println("Mot de passe correct");
+                    return user;
+                } else {
+                    System.out.println("Mot de passe incorrect");
+                }
+            }
+        }
+        return null;  // Aucun utilisateur trouvé ou mot de passe incorrect
+    }
+
 
 }

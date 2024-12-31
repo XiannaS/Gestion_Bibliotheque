@@ -3,7 +3,7 @@ package vue;
 import controllers.EmpruntController;
 import controllers.LivreController;
 import controllers.UserController;
-import controllers.DashboardController; // Importer le DashboardController
+import controllers.DashboardController;
 import model.UserDAO;
 
 import javax.swing.*;
@@ -21,7 +21,6 @@ public class BibliothequeApp extends JFrame {
     private JLabel welcomeLabel;
     private boolean isDarkMode = true;
 
-    // Constructeur de la classe BibliothequeApp
     public BibliothequeApp() {
         setTitle("Gestion de Bibliothèque");
         setSize(800, 600);
@@ -31,28 +30,28 @@ public class BibliothequeApp extends JFrame {
         // Initialisation des vues
         LivreView livreView = new LivreView();
         EmpruntView empruntView = new EmpruntView();
-        UserView userView = new UserView(); 
-        DashboardView dashboardView = new DashboardView(); // Initialisation de la vue du dashboard
+        UserView userView = new UserView();
+        DashboardView dashboardView = new DashboardView();
+
+        // Chargement des fichiers CSV
+        String empruntFilePath = getClass().getClassLoader().getResource("data/emprunts.csv").toURI().getPath();
+        String booksFilePath = getClass().getClassLoader().getResource("data/books.csv").toURI().getPath();
+        String usersFilePath = getClass().getClassLoader().getResource("data/users.csv").toURI().getPath();
 
         // Initialisation des contrôleurs
         EmpruntController empruntController = null;
         LivreController livreController = null;
         UserController userController = null;
-        UserDAO userDAO = new UserDAO("src/resources/users.csv");
+        UserDAO userDAO = new UserDAO(usersFilePath);
 
-        // Chargement des contrôleurs et gestion des exceptions pour chaque
         try {
-            empruntController = new EmpruntController(empruntView,
-                "src/resources/emprunt.csv",
-                "src/resources/books.csv",
-                "src/resources/users.csv"
-            );
+            empruntController = new EmpruntController(empruntView, empruntFilePath, booksFilePath, usersFilePath);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des emprunts : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
 
         try {
-            livreController = new LivreController(livreView, "src/resources/books.csv", empruntController);
+            livreController = new LivreController(livreView, booksFilePath, empruntController);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement des livres : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
@@ -66,73 +65,47 @@ public class BibliothequeApp extends JFrame {
         // Création du panneau d'onglets
         tabbedPane = new JTabbedPane();
 
-        // Vérification de l'initialisation des contrôleurs avant d'ajouter des vues
-        if (livreController != null) {
-            tabbedPane.addTab("Livres", livreView);
-        }
-
-        if (userController != null) {
-            tabbedPane.addTab("Utilisateurs", userView);
-        }
-
-        if (empruntController != null) {
-            tabbedPane.addTab("Emprunts", empruntView);
-        }
+        if (livreController != null) tabbedPane.addTab("Livres", livreView);
+        if (userController != null) tabbedPane.addTab("Utilisateurs", userView);
+        if (empruntController != null) tabbedPane.addTab("Emprunts", empruntView);
 
         // Ajouter le dashboard
         if (dashboardView != null) {
             DashboardController dashboardController = new DashboardController(dashboardView, empruntController, livreController, userController);
             tabbedPane.addTab("Dashboard", dashboardView);
         }
-    
-        // Créer un JPanel pour le header avec des icônes
+
+        // Création du header
         JPanel headerPanel = new JPanel();
-        headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));  // Alignement à droite pour les icônes
+        headerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
-        // Icône de notification
-        ImageIcon notificationIcon = new ImageIcon(new ImageIcon("src/resources/notification.png")
-                .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
-        notificationButton = new JButton(notificationIcon);
-        notificationButton.setToolTipText("Notifications");
-        notificationButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
-        headerPanel.add(notificationButton);
+        notificationButton = new JButton(loadIcon("notification.png"));
+        profileButton = new JButton(loadIcon("profile.png"));
+        toggleThemeButton = new JButton(loadIcon("mode.png"));
 
-        // Icône de profil
-        ImageIcon profileIcon = new ImageIcon(new ImageIcon("src/resources/profile.png")
-                .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
-        profileButton = new JButton(profileIcon);
-        profileButton.setToolTipText("Profil");
-        profileButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
-        profileButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
-        profileButton.addActionListener(this::onProfileClicked);
-        headerPanel.add(profileButton);
-
-        // Icône de bascule de thème
-        ImageIcon toggleThemeIcon = new ImageIcon(new ImageIcon("src/resources/mode.png")
-                .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
-        toggleThemeButton = new JButton(toggleThemeIcon);
-        toggleThemeButton.setToolTipText("Basculer le thème");
-        toggleThemeButton.setPreferredSize(new Dimension(30, 30)); // Ajustez la taille du bouton si nécessaire
         toggleThemeButton.addActionListener(this::toggleTheme);
-        headerPanel.add(toggleThemeButton);
 
-        // Label de bienvenue avec le nom de l'utilisateur
         welcomeLabel = new JLabel("Bienvenue, Nom Utilisateur !");
+        headerPanel.add(notificationButton);
+        headerPanel.add(profileButton);
+        headerPanel.add(toggleThemeButton);
         headerPanel.add(welcomeLabel);
 
-        // Ajouter le header et les onglets dans la fenêtre principale
-        add(headerPanel, BorderLayout.NORTH); // Ajouter le header en haut
-        add(tabbedPane, BorderLayout.CENTER);  // Ajouter les onglets au centre
+        add(headerPanel, BorderLayout.NORTH);
+        add(tabbedPane, BorderLayout.CENTER);
     }
 
-    /**
-     * Action qui gère le clic sur le bouton de profil
-     *
-     * @param event L'événement de clic
-     */
-    private void onProfileClicked(ActionEvent event) {
-        // Action à effectuer lors du clic sur le profil
-        JOptionPane.showMessageDialog(this, "Profil de l'utilisateur sélectionné.", "Profil", JOptionPane.INFORMATION_MESSAGE);
+    // Méthode pour charger les icônes en toute sécurité
+    private ImageIcon loadIcon(String resourceName) {
+        try {
+            return new ImageIcon(
+                new ImageIcon(getClass().getClassLoader().getResource(resourceName))
+                .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH)
+            );
+        } catch (NullPointerException e) {
+            JOptionPane.showMessageDialog(this, "Icone introuvable : " + resourceName, "Erreur", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
     }
 
     /**
@@ -157,12 +130,5 @@ public class BibliothequeApp extends JFrame {
         // Mettre à jour l'interface graphique
         SwingUtilities.updateComponentTreeUI(this);
         isDarkMode = !isDarkMode;
-    }
-
-    public static void main(String[] args) {
-        // Assurez-vous de lancer l'UI sur le thread de l'Event Dispatching (EDT)
-        SwingUtilities.invokeLater(() -> {
-            new BibliothequeApp().setVisible(true);
-        });
     }
 }

@@ -51,7 +51,7 @@ public class VisitorView extends JFrame {
         backButton.setForeground(Color.WHITE);
         backButton.setFocusPainted(false);
         backButton.addActionListener(e -> {
-            new LoginView(app).setVisible(true);
+            new LoginView().setVisible(true);
             dispose();
         });
         add(backButton, BorderLayout.SOUTH);
@@ -146,7 +146,7 @@ public class VisitorView extends JFrame {
         borrowButton.addActionListener(e -> {
             int result = JOptionPane.showConfirmDialog(this, "Voulez-vous vous connecter pour emprunter ce livre?", "Emprunter Livre", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                new LoginView(new BibliothequeApp()).setVisible(true);
+                new LoginView().setVisible(true);
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Veuillez voir un bibliothécaire pour emprunter ce livre.");
