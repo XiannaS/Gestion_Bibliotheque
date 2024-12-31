@@ -29,7 +29,8 @@ public class LivreView extends JPanel {
         setLayout(new BorderLayout());
 
         // Table des livres
-        tableModel = new DefaultTableModel(new String[]{"ID", "Titre", "Auteur", "Genre", "Année", "ISBN", "Description", "Éditeur", "Exemplaires"}, 0);
+     // Modifie la ligne qui initialise ta table pour ajouter une colonne "Exemplaires Restants"
+        tableModel = new DefaultTableModel(new String[]{"ID", "Titre", "Auteur", "Genre", "Année", "ISBN", "Description", "Éditeur", "Exemplaires", "Exemplaires Restants"}, 0);
         livresTable = new JTable(tableModel);
         livresTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         livresTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -165,6 +166,7 @@ public class LivreView extends JPanel {
     public void updateLivresTable(List<Livre> livres) {
         tableModel.setRowCount(0); // Efface toutes les lignes existantes
         for (Livre livre : livres) {
+            // Ajoute le nombre d'exemplaires restants (exemplaires disponibles)
             Object[] row = {
                 livre.getId(),
                 livre.getTitre(),
@@ -174,7 +176,8 @@ public class LivreView extends JPanel {
                 livre.getIsbn(),
                 livre.getDescription(),
                 livre.getEditeur(),
-                livre.getTotalExemplaires()
+                livre.getTotalExemplaires(),
+                livre.getExemplairesDisponibles() // Utilise la méthode qui retourne le nombre d'exemplaires disponibles
             };
             tableModel.addRow(row);
         }

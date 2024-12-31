@@ -66,12 +66,12 @@ public class Livre {
     
     public void emprunter() {
         if (exemplairesDisponibles > 0) {
-            exemplairesDisponibles--;
+            exemplairesDisponibles--;  // Décrémenter le nombre d'exemplaires disponibles
         } else {
             throw new IllegalStateException("Aucun exemplaire disponible pour emprunt.");
         }
     }
-
+    
     public void retourner() {
         if (exemplairesDisponibles < totalExemplaires) {
             exemplairesDisponibles++; // Incrémenter uniquement les exemplaires disponibles

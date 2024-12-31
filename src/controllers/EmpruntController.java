@@ -2,6 +2,7 @@ package controllers;
 
 import model.Emprunt;
 import model.EmpruntDAO;
+import model.Livre;
 import model.LivreDAO;
 import model.User;
 import model.UserDAO;
@@ -17,10 +18,12 @@ import java.util.stream.Collectors;
 
 public class EmpruntController {
     private EmpruntDAO empruntModel;
+    private static final int MAX_RENEWALS = 1;
     private UserDAO userDAO;
     private LivreDAO livreDAO;
     private EmpruntView empruntView;
-
+    private List<Livre> livres;
+    private List<Emprunt> emprunts; 
     public EmpruntController(EmpruntView empruntView, String csvFileEmprunts, String csvFileLivres, String csvFileUsers) {
         this.empruntModel = new EmpruntDAO(csvFileEmprunts);
         this.livreDAO = new LivreDAO(csvFileLivres);
@@ -28,7 +31,13 @@ public class EmpruntController {
         this.empruntView = empruntView;
         ajouterEcouteurs();
         chargerEmprunts("Tous");
+        
     }
+    public boolean hasActiveEmpruntsForBook(int livreId) {
+        return empruntModel.listerEmprunts().stream()
+                .anyMatch(emprunt -> emprunt.getLivreId() == livreId && !emprunt.isRendu()); // Utilisation de isRendu() au lieu de isReturned()
+    }
+
 
     private void ajouterEcouteurs() {
         empruntView.getRetournerButton().addActionListener(e -> {
@@ -43,11 +52,18 @@ public class EmpruntController {
         empruntView.getRenouvelerButton().addActionListener(e -> {
             try {
                 int empruntId = getSelectedEmpruntId();
-                renouvelerEmprunt(empruntId);
+                boolean renouvellement = renouvelerEmprunt(empruntId);
+                if (renouvellement) {
+                    JOptionPane.showMessageDialog(empruntView, "Renouvellement réussi !");
+                    chargerEmprunts("Tous"); // Recharge la liste des emprunts après renouvellement
+                } else {
+                    JOptionPane.showMessageDialog(empruntView, "Impossible de renouveler cet emprunt.");
+                }
             } catch (IllegalStateException ex) {
                 JOptionPane.showMessageDialog(empruntView, ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         });
+
 
         empruntView.getSupprimerButton().addActionListener(e -> {
             try {
@@ -69,6 +85,12 @@ public class EmpruntController {
             chargerEmprunts(selectedCriteria);
         });
     }
+    // Méthode pour obtenir le titre du livre par ID
+    public String getTitreLivreById(int livreId) {
+        Livre livre = livreDAO.rechercherParID(livreId);
+        return (livre != null) ? livre.getTitre() : "Livre non trouvé";
+    }
+    
     public void chargerEmprunts(String searchTerm, String searchType) {
         List<Emprunt> emprunts = empruntModel.listerEmprunts(); // Récupérer tous les emprunts
         try {
@@ -92,7 +114,7 @@ public class EmpruntController {
         } catch (NumberFormatException | DateTimeParseException ex) {
             JOptionPane.showMessageDialog(empruntView, "Erreur de format : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
-        empruntView.updateEmpruntsTable(emprunts);
+        empruntView.updateEmpruntsTable(emprunts, livreDAO);
     }
 
 
@@ -112,7 +134,7 @@ public class EmpruntController {
             default:
                 break; // "Tous" ne nécessite pas de filtrage
         }
-        empruntView.updateEmpruntsTable(emprunts);
+        empruntView.updateEmpruntsTable(emprunts, livreDAO);
     }
  
     private int getSelectedEmpruntId() {
@@ -133,15 +155,33 @@ public class EmpruntController {
         }
     }
 
-    public void renouvelerEmprunt(int empruntId) {
-        try {
-            empruntModel.renouvelerEmprunt(empruntId);
-            chargerEmprunts("Tous"); // Recharge la liste des emprunts
-            JOptionPane.showMessageDialog(empruntView, "Emprunt prolongé avec succès !");
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(empruntView, ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+    public boolean renouvelerEmprunt(int empruntId) {
+        System.out.println("Tentative de renouvellement pour l'emprunt ID: " + empruntId);
+
+        Emprunt emprunt = empruntModel.getEmpruntById(empruntId);
+        if (emprunt == null) {
+            System.out.println("Emprunt non trouvé.");
+            return false; // Emprunt non trouvé
         }
+        if (emprunt.isRendu()) {
+            System.out.println("Emprunt déjà rendu, ne peut pas être renouvelé.");
+            return false; // Emprunt déjà rendu, ne peut pas être renouvelé
+        }
+        if (emprunt.getNombreRenouvellements() >= MAX_RENEWALS) {
+            System.out.println("Emprunt atteint le nombre maximum de renouvellements.");
+            return false; // Emprunt ne peut pas être renouvelé
+        }
+
+        // Logique pour renouveler l'emprunt
+        System.out.println("Renouvellement de l'emprunt : nouvelle date de retour prévue : " + emprunt.getDateRetourPrevue().plusDays(14));
+        emprunt.setDateRetourPrevue(emprunt.getDateRetourPrevue().plusDays(14)); // Exemple de renouvellement
+        emprunt.incrementerNombreRenouvellements();
+        empruntModel.updateEmprunt(emprunt); // Mettez à jour l'emprunt dans le modèle
+        System.out.println("Renouvellement réussi.");
+        return true; // Renouvellement réussi
     }
+
+
 
     public void supprimerEmprunt(int empruntId) {
         int confirmation = JOptionPane.showConfirmDialog(empruntView, "Êtes-vous sûr de vouloir supprimer cet emprunt ?", "Confirmation", JOptionPane.YES_NO_OPTION);
@@ -152,9 +192,19 @@ public class EmpruntController {
         }
     }
     public void ajouterEmprunt(Emprunt emprunt) {
-        empruntModel.ajouterEmprunt(emprunt); // Assurez-vous que cette méthode existe dans EmpruntDAO
+        // L'ID sera automatiquement généré dans EmpruntDAO lors de l'ajout de l'emprunt
+        empruntModel.ajouterEmprunt(emprunt); // Cette méthode gère la génération de l'ID
         chargerEmprunts("Tous"); // Recharge la liste des emprunts après ajout
-    }  
+        JOptionPane.showMessageDialog(empruntView, "Emprunt ajouté avec succès !");
+    }
+
+    public String getTitreLivre(int livreId) {
+    	for (Livre livre : livres) {
+    		if (livre.getId() == livreId) {
+    			return livre.getTitre();
+    			} } 
+    	return "Titre inconnu"; // Retourne une valeur par défaut si le livre n'est pas trouvé }
+    }
     
  // Récupérer l'historique des emprunts d'un utilisateur
     public List<Emprunt> getHistoriqueEmprunts(String userId) {
@@ -167,10 +217,11 @@ public class EmpruntController {
         // Logique pour générer un nouvel ID unique pour un emprunt
         return empruntModel.listerEmprunts().size() + 1; // Exemple simple
     }
+    
     public boolean hasActiveEmprunts(String userId) {
         // Check if the user has any active loans
         return empruntModel.listerEmprunts().stream()
-            .anyMatch(emprunt -> emprunt.getUserId().equals(userId) && !emprunt.isReturned());
+            .anyMatch(emprunt -> emprunt.getUserId().equals(userId) && !emprunt.isRendu());
     }
     
     public boolean isUserActive(String userId) {
@@ -178,5 +229,15 @@ public class EmpruntController {
         User user = userDAO.getUserById(userId);
         return user != null && user.isActive(); // Assurez-vous que User a la méthode isActive
     }
+
+ 
+    public boolean hasActiveEmpruntForUser(String userId, int livreId) {
+        // Utiliser directement l'appel à listerEmprunts pour éviter le problème de liste non initialisée
+        return empruntModel.listerEmprunts().stream()
+                .anyMatch(emprunt -> emprunt.getUserId().equals(userId)
+                        && emprunt.getLivreId() == livreId
+                        && !emprunt.isRendu());
+    }
+
 
 }

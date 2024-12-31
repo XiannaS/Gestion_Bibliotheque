@@ -6,7 +6,8 @@ import java.util.List;
 
 public class LivreDAO {
     private String filePath;
-
+    private List<Emprunt> emprunts;  
+    
     public LivreDAO(String filePath) {
         this.filePath = filePath;
         afficherLivresDisponibles();
@@ -50,6 +51,7 @@ public class LivreDAO {
         }
         return livres;
     }
+    
     public void addLivre(Livre livre) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath, true))) {
             bw.write(livre.toString() + ";" + livre.isDisponible());
@@ -131,5 +133,19 @@ public class LivreDAO {
         }
         return false; // Retourne false si aucun livre n'est trouvé
     }
- 
+    // Méthode pour obtenir le nombre d'exemplaires disponibles pour un livre
+    public int getExemplairesDisponibles(Livre livre) {
+        int exemplairesEmpruntes = 0;
+        
+        // Calculer le nombre d'emprunts actifs pour ce livre
+        for (Emprunt emprunt : emprunts) {
+            if (emprunt.getLivreId() == livre.getId() && !emprunt.isRendu()) {
+                exemplairesEmpruntes++;
+            }
+        }
+
+        // Le nombre d'exemplaires restants est égal au nombre total d'exemplaires moins ceux empruntés
+        return livre.getTotalExemplaires() - exemplairesEmpruntes;
+    }
+
 }

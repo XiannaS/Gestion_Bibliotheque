@@ -24,15 +24,15 @@ public class Emprunt {
         this.dateRetourEffective = dateRetourEffective;
         this.rendu = rendu;
         this.penalite = penalite;
+        this.nombreRenouvellements = 0;  // Initialiser à zéro
     }
-    // Ajout du setter pour l'ID
-    public void setId(int id) {
-        this.id = id;
-    }
+
+    // Getter pour le nombre de renouvellements
     public int getNombreRenouvellements() {
         return nombreRenouvellements;
     }
 
+    // Setter pour le nombre de renouvellements
     public void setNombreRenouvellements(int nombreRenouvellements) {
         this.nombreRenouvellements = nombreRenouvellements;
     }
@@ -41,13 +41,53 @@ public class Emprunt {
     public boolean peutEtreRenouvele() {
         return nombreRenouvellements < 1;
     }
-    public boolean isReturned() {
-        return rendu; // Retourne true si le livre a été retourné, false sinon
+
+    // Méthode pour retourner le livre et calculer la pénalité en cas de retard
+    public void retournerLivre() {
+        this.dateRetourEffective = LocalDate.now();
+        this.rendu = true;
+        // Calcul du retard si le livre est retourné en retard
+        long retard = ChronoUnit.DAYS.between(dateRetourPrevue, dateRetourEffective);
+        if (retard > 0) {
+            this.penalite = (int) retard * 3;
+        } else {
+            this.penalite = 0;
+        }
     }
 
-    public void setReturned(boolean returned) {
-        this.rendu = returned; // Setter pour le statut de retour
+    // Calculer le nombre de jours de retard
+    public long getJoursDeRetard() {
+        if (dateRetourEffective != null && dateRetourEffective.isAfter(dateRetourPrevue)) {
+            return ChronoUnit.DAYS.between(dateRetourPrevue, dateRetourEffective);
+        }
+        return 0;
     }
+
+    // Méthode pour calculer la pénalité
+    public int calculerPenalite() {
+        long joursRetard = getJoursDeRetard();
+        if (joursRetard > 0) {
+            penalite = (int) joursRetard * 3;  // Calculer la pénalité en fonction des jours de retard
+        } else {
+            penalite = 0;  // Aucune pénalité si pas de retard
+        }
+        return penalite;
+    }
+
+
+    // Vérifier si l'emprunt est en retard
+    public boolean isRetard() {
+        return dateRetourEffective != null && dateRetourEffective.isAfter(dateRetourPrevue);
+    }
+
+    // Convertir l'objet en format CSV
+    public String toCSV() {
+        return id + ";" + livreId + ";" + userId + ";" + dateEmprunt + ";" +
+               dateRetourPrevue + ";" + (dateRetourEffective != null ? dateRetourEffective : "") + ";" +
+               rendu + ";" + penalite + ";" + nombreRenouvellements;  // Ajout du nombre de renouvellements
+    }
+
+
     // Getters et setters existants
     public int getId() { return id; }
     public int getLivreId() { return livreId; }
@@ -58,44 +98,23 @@ public class Emprunt {
     public boolean isRendu() { return rendu; }
     public int getPenalite() { return penalite; }
 
-    public void retournerLivre() {
-        this.dateRetourEffective = LocalDate.now();
-        this.rendu = true;
-
-        long retard = ChronoUnit.DAYS.between(dateRetourPrevue, dateRetourEffective);
-        if (retard > 0) {
-            this.penalite = (int) retard * 3;
-        } else {
-            this.penalite = 0;
-        }
-    }
-    
-    public int calculerPenalite() {
-        if (dateRetourEffective != null && dateRetourEffective.isAfter(dateRetourPrevue)) {
-        	long joursRetard = ChronoUnit.DAYS.between(dateRetourPrevue, dateRetourEffective);
-        	penalite = (int) (joursRetard * 1); // 1   par jour de retard
-  
-        }
-        return penalite;
-    }
-
-    
-    public boolean isRetard() {
-        return dateRetourEffective != null && dateRetourEffective.isAfter(dateRetourPrevue);
-    }
-
-    public String toCSV() {
-        return id + ";" + livreId + ";" + userId + ";" + dateEmprunt + ";" +
-               dateRetourPrevue + ";" + (dateRetourEffective != null ? dateRetourEffective : "") + ";" +
-               rendu + ";" + penalite;
-    }
-
-
+    // Setters
     public void setDateRetourPrevue(LocalDate dateRetourPrevue) {
         this.dateRetourPrevue = dateRetourPrevue;
     }
-	public void setPenalite(int penalite) {
-		   this.penalite = penalite;
+
+    public void setPenalite(int penalite) {
+        this.penalite = penalite;
+    }
+
+	public void setId(int id) {
+		 this.id = id;
 		
 	}
+
+	public void incrementerNombreRenouvellements() {
+	    this.nombreRenouvellements++;
+	}
+
+	 
 }

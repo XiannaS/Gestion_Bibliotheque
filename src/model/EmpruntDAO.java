@@ -19,10 +19,11 @@ public class EmpruntDAO {
 
     // Ajouter un nouvel emprunt
     public void ajouterEmprunt(Emprunt emprunt) {
-        emprunt.setId(nextId++);
-        emprunts.add(emprunt);
-        sauvegarderCSV();
+        emprunt.setId(nextId++);  // Assigner un ID unique à l'emprunt
+        emprunts.add(emprunt);     // Ajouter l'emprunt à la liste
+        sauvegarderCSV();         // Sauvegarder les emprunts dans le fichier CSV
     }
+
 
     // Retourner un livre par ID d'emprunt
     public void retournerLivre(int empruntId) {
@@ -43,10 +44,11 @@ public class EmpruntDAO {
             String userId = parts[2];
             LocalDate dateEmprunt = LocalDate.parse(parts[3]);
             LocalDate dateRetourPrevue = LocalDate.parse(parts[4]);
-            
+
             LocalDate dateRetourEffective = null;
             boolean rendu = false;
             int penalite = 0;
+            int nombreRenouvellements = 0;  // Valeur par défaut pour nombreRenouvellements
 
             if (parts.length > 5 && !parts[5].isEmpty()) {
                 dateRetourEffective = LocalDate.parse(parts[5]);
@@ -57,13 +59,22 @@ public class EmpruntDAO {
             if (parts.length > 7) {
                 penalite = Integer.parseInt(parts[7]);
             }
+            if (parts.length > 8) {
+                nombreRenouvellements = Integer.parseInt(parts[8]); // Lecture du nombre de renouvellements
+            }
 
-            return new Emprunt(id, livreId, userId, dateEmprunt, dateRetourPrevue, dateRetourEffective, rendu, penalite);
+            // Création de l'objet Emprunt avec tous les champs
+            Emprunt emprunt = new Emprunt(id, livreId, userId, dateEmprunt, dateRetourPrevue, dateRetourEffective, rendu, penalite);
+            emprunt.setNombreRenouvellements(nombreRenouvellements);  // Affecter le nombre de renouvellements
+            return emprunt;
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException | NullPointerException e) {
             System.err.println("Ligne ignorée en raison d'une erreur de format : " + line);
             return null; // Ignorer les lignes incorrectes
         }
     }
+
+    
+    
     // Lister les emprunts
     public List<Emprunt> listerEmprunts() {
         return new ArrayList<>(emprunts);
@@ -90,8 +101,11 @@ public class EmpruntDAO {
     // Sauvegarder les emprunts dans le CSV
     private void sauvegarderCSV() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFileName))) {
-            bw.write("id;livreId;userId;dateEmprunt;dateRetourPrevue;dateRetourEffective;rendu;penalite");
+            // Écrire l'en-tête
+            bw.write("id;livreId;userId;dateEmprunt;dateRetourPrevue;dateRetourEffective;rendu;penalite;nombreRenouvellements");
             bw.newLine();
+
+            // Écrire chaque emprunt dans le fichier CSV
             for (Emprunt emprunt : emprunts) {
                 bw.write(emprunt.toCSV());
                 bw.newLine();
@@ -100,6 +114,7 @@ public class EmpruntDAO {
             System.err.println("Erreur lors de la sauvegarde des emprunts : " + e.getMessage());
         }
     }
+
     public Emprunt getEmpruntById(int empruntId) {
         return emprunts.stream()
                 .filter(e -> e.getId() == empruntId)
@@ -130,15 +145,21 @@ public class EmpruntDAO {
                     throw new IllegalArgumentException("Renouvellement déjà effectué.");
                 }
 
-                LocalDate nouvelleDateRetour = emprunt.getDateRetourPrevue().plusDays(14); // Renouvelle de 14 jours
+                // Renouveler l'emprunt en ajoutant 14 jours à la date de retour prévue
+                LocalDate nouvelleDateRetour = emprunt.getDateRetourPrevue().plusDays(14);
                 emprunt.setDateRetourPrevue(nouvelleDateRetour);
+
+                // Incrémenter le nombre de renouvellements
                 emprunt.setNombreRenouvellements(emprunt.getNombreRenouvellements() + 1);
-                sauvegarderCSV(); // Sauvegarde les modifications dans le fichier CSV
+
+                // Sauvegarder les modifications dans le fichier CSV
+                sauvegarderCSV();
                 return;
             }
         }
         throw new IllegalArgumentException("Emprunt non trouvé ou déjà retourné.");
     }
+
 
     public void supprimerTousLesEmprunts() throws IOException {
         int choice = JOptionPane.showConfirmDialog(null, 

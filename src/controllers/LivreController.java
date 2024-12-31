@@ -103,145 +103,160 @@ public class LivreController {
     }
 
   
-public void modifierLivre() {
-    int selectedIndex = livreView.getLivresTable().getSelectedRow();
-    
-    if (selectedIndex != -1) {
-        // Récupérer le livre sélectionné
-        Livre livre = livreDAO.getAllLivres().get(selectedIndex);
-        
-        try {
-            // Récupérer les nouvelles valeurs
-            String nouveauTitre = livreView.getTitre();
-            String nouvelAuteur = livreView.getAuteur();
-            String nouveauGenre = livreView.getGenre();
-            int anneePublication = livreView.getAnneePublication();
-            String nouvelIsbn = livreView.getIsbn();
-            String nouvelleDescription = livreView.getDescription();
-            String nouvelEditeur = livreView.getEditeur();
-            int nouveauxExemplaires = livreView.getExemplaires();
+    public void modifierLivre() {
+        int selectedIndex = livreView.getLivresTable().getSelectedRow();
 
-            // Vérifier si l'année de publication est valide
-            if (anneePublication < 0) {
-                throw new LivreException.InvalidYearException("L'année de publication ne peut pas être négative.");
-            }
-
-            // Vérifier si le livre existe déjà (en ignorant le livre actuel)
-            boolean livreExistant = livreDAO.getAllLivres().stream()
-                .anyMatch(l -> l.getTitre().equalsIgnoreCase(nouveauTitre) && l.getAuteur().equalsIgnoreCase(nouvelAuteur) && l.getId() != livre.getId());
-            
-            if (livreExistant) {
-                throw new LivreException("Un livre avec ce titre et cet auteur existe déjà.");
-            }
-
-            // Mettre à jour les détails du livre
-            livre.setTitre(nouveauTitre);
-            livre.setAuteur(nouvelAuteur);
-            livre.setGenre(nouveauGenre);
-            livre.setAnneePublication(anneePublication);
-            livre.setIsbn(nouvelIsbn);
-            livre.setDescription(nouvelleDescription);
-            livre.setEditeur(nouvelEditeur);
-            livre.setTotalExemplaires(nouveauxExemplaires);
-
-            // Mettre à jour le livre dans le DAO
-            livreDAO.updateLivre(livre);
-            // Vider le formulaire
-            livreView.clearFields();
-            loadAndDisplayBooks(); // Recharger la liste des livres
-            JOptionPane.showMessageDialog(livreView, "Livre modifié avec succès !");
-        } catch (LivreException.InvalidYearException e) {
-            JOptionPane.showMessageDialog(livreView, e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-        } catch (LivreException e) {
-            JOptionPane.showMessageDialog(livreView, e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(livreView, "Erreur : Veuillez entrer un nombre valide pour l'année de publication et le nombre d'exemplaires.", "Erreur", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(livreView, "Erreur lors de la modification du livre : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-        }
-    } else {
-        JOptionPane.showMessageDialog(livreView, "Veuillez sélectionner un livre à modifier.", "Avertissement", JOptionPane.WARNING_MESSAGE);
-    }
-}
-public void supprimerLivre() {
-    int selectedIndex = livreView.getLivresTable().getSelectedRow();
-    
-    if (selectedIndex != -1) {
-        // Récupérer le livre sélectionné
-        Livre livre = livreDAO.getAllLivres().get(selectedIndex);
-        
-        // Vérifier s'il y a des emprunts actifs
-        // Assurez-vous que l'ID utilisateur est de type String
-        String userId = String.valueOf(livre.getId()); // Remplacez par l'ID de l'utilisateur approprié
-
-        if (empruntController.hasActiveEmprunts(userId)) {
-            JOptionPane.showMessageDialog(livreView, "Impossible de supprimer ce livre, car il y a des emprunts actifs associés.", "Erreur", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        int confirmation = JOptionPane.showConfirmDialog(livreView, "Êtes-vous sûr de vouloir supprimer le livre : " + livre.getTitre() + " ?", "Confirmation", JOptionPane.YES_NO_OPTION);
-        
-        if (confirmation == JOptionPane.YES_OPTION) {
-            // Supprimer le livre du DAO
-            livreDAO.deleteLivre(livre.getId()); // Assurez-vous que cette méthode existe dans LivreDAO
-            loadAndDisplayBooks(); // Recharger la liste des livres
-            JOptionPane.showMessageDialog(livreView, "Livre supprimé avec succès !");
-        }
-    } else {
-        JOptionPane.showMessageDialog(livreView, "Veuillez sélectionner un livre à supprimer.", "Avertissement", JOptionPane.WARNING_MESSAGE);
-    }
-}
-
-public void emprunterLivre() {
-    int selectedIndex = livreView.getLivresTable().getSelectedRow();
-    
-    if (selectedIndex != -1) {
-        String userIdStr = JOptionPane.showInputDialog(livreView, "Veuillez entrer votre ID utilisateur :");
-        
-        if (userIdStr != null && !userIdStr.trim().isEmpty()) {
-            try {
-            	   String userId = String.valueOf(userIdStr); 
-                
-                // Vérifier si l'utilisateur est actif
-                if (!empruntController.isUserActive(userId)) {
-                    JOptionPane.showMessageDialog(livreView, "L'utilisateur n'est pas actif ou a des pénalités.", "Erreur", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                Livre livre = livreDAO.getAllLivres().get(selectedIndex);
-                
-                if (livre.isDisponible()) {
-                    livre.emprunter();
-                    livreDAO.updateLivre(livre);
-                    
-                    // Créer un nouvel emprunt
-                    Emprunt emprunt = new Emprunt(empruntController.generateEmpruntId(), livre.getId(), String.valueOf(userId), LocalDate.now(), 
-                                                   LocalDate.now().plusDays(14), null, false, 0);
-                    // Utiliser la méthode d'EmpruntController pour ajouter l'emprunt
-                    empruntController.ajouterEmprunt(emprunt);
-                    
-                    loadAndDisplayBooks();
-                    JOptionPane.showMessageDialog(livreView, "Livre emprunté avec succès !");
-                } else {
-                    JOptionPane.showMessageDialog(livreView, "Ce livre n'est pas disponible pour emprunt.", "Avertissement", JOptionPane.WARNING_MESSAGE);
-                }
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(livreView, "ID utilisateur invalide. Veuillez entrer un nombre.", "Avertissement", JOptionPane.WARNING_MESSAGE);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(livreView, "Erreur lors de l'emprunt du livre : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    } else {
-       
-        JOptionPane.showMessageDialog(livreView, "Veuillez sélectionner un livre à emprunter.", "Avertissement", JOptionPane.WARNING_MESSAGE);
-     }}
-    public void afficherDetailsLivre() {
-        int selectedIndex = livreView.getLivresTable().getSelectedRow(); // Utilisez getSelectedRow()
         if (selectedIndex != -1) {
+            // Récupérer le livre sélectionné
             Livre livre = livreDAO.getAllLivres().get(selectedIndex);
-            livreView.setDetails(livre);
+
+            try {
+                // Récupérer les nouvelles valeurs
+                String nouveauTitre = livreView.getTitre();
+                String nouvelAuteur = livreView.getAuteur();
+                String nouveauGenre = livreView.getGenre();
+                int anneePublication = livreView.getAnneePublication();
+                String nouvelIsbn = livreView.getIsbn();
+                String nouvelleDescription = livreView.getDescription();
+                String nouvelEditeur = livreView.getEditeur();
+                int nouveauxExemplaires = livreView.getExemplaires();
+
+                // Vérifier si l'année de publication est valide
+                if (anneePublication < 0) {
+                    throw new LivreException.InvalidYearException("L'année de publication ne peut pas être négative.");
+                }
+
+                // Vérifier si le livre existe déjà (en ignorant le livre actuel)
+                boolean livreExistant = livreDAO.getAllLivres().stream()
+                    .anyMatch(l -> l.getTitre().equalsIgnoreCase(nouveauTitre) && l.getAuteur().equalsIgnoreCase(nouvelAuteur) && l.getId() != livre.getId());
+
+                if (livreExistant) {
+                    throw new LivreException("Un livre avec ce titre et cet auteur existe déjà.");
+                }
+
+                // Mettre à jour les détails du livre
+                livre.setTitre(nouveauTitre);
+                livre.setAuteur(nouvelAuteur);
+                livre.setGenre(nouveauGenre);
+                livre.setAnneePublication(anneePublication);
+                livre.setIsbn(nouvelIsbn);
+                livre.setDescription(nouvelleDescription);
+                livre.setEditeur(nouvelEditeur);
+                livre.setTotalExemplaires(nouveauxExemplaires);
+
+                // Mettre à jour le livre dans le DAO
+                livreDAO.updateLivre(livre);
+
+                // Vider le formulaire
+                livreView.clearFields();
+                loadAndDisplayBooks(); // Recharger la liste des livres
+                JOptionPane.showMessageDialog(livreView, "Livre modifié avec succès !");
+            } catch (LivreException.InvalidYearException e) {
+                JOptionPane.showMessageDialog(livreView, e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            } catch (LivreException e) {
+                JOptionPane.showMessageDialog(livreView, e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(livreView, "Erreur : Veuillez entrer un nombre valide pour l'année de publication et le nombre d'exemplaires.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(livreView, "Erreur lors de la modification du livre : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(livreView, "Veuillez sélectionner un livre à modifier.", "Avertissement", JOptionPane.WARNING_MESSAGE);
         }
     }
+
+	
+	public void supprimerLivre() {
+		    int selectedIndex = livreView.getLivresTable().getSelectedRow();
+		    
+		    if (selectedIndex != -1) {
+		        // Récupérer le livre sélectionné
+		        Livre livre = livreDAO.getAllLivres().get(selectedIndex);
+		        
+		        // Vérifier s'il y a des emprunts actifs
+		        // Assurez-vous que l'ID utilisateur est de type String
+		        String userId = String.valueOf(livre.getId()); // Remplacez par l'ID de l'utilisateur approprié
+		
+		        if (empruntController.hasActiveEmpruntsForBook(livre.getId())) {
+		            JOptionPane.showMessageDialog(livreView, "Impossible de supprimer ce livre, car il y a des emprunts actifs associés.", "Erreur", JOptionPane.ERROR_MESSAGE);
+		            return;
+		        }
+
+		
+		        int confirmation = JOptionPane.showConfirmDialog(livreView, "Êtes-vous sûr de vouloir supprimer le livre : " + livre.getTitre() + " ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+		        
+		        if (confirmation == JOptionPane.YES_OPTION) {
+		            // Supprimer le livre du DAO
+		            livreDAO.deleteLivre(livre.getId()); // Assurez-vous que cette méthode existe dans LivreDAO
+		            loadAndDisplayBooks(); // Recharger la liste des livres
+		            JOptionPane.showMessageDialog(livreView, "Livre supprimé avec succès !");
+		        }
+		    } else {
+		        JOptionPane.showMessageDialog(livreView, "Veuillez sélectionner un livre à supprimer.", "Avertissement", JOptionPane.WARNING_MESSAGE);
+		    }
+		}
+
+	public void emprunterLivre() {
+	    int selectedIndex = livreView.getLivresTable().getSelectedRow();
+
+	    if (selectedIndex != -1) {
+	        String userIdStr = JOptionPane.showInputDialog(livreView, "Veuillez entrer votre ID utilisateur :");
+
+	        if (userIdStr != null && !userIdStr.trim().isEmpty()) {
+	            try {
+	                // Vérifier si l'utilisateur est actif
+	                if (!empruntController.isUserActive(userIdStr)) {
+	                    JOptionPane.showMessageDialog(livreView, "L'utilisateur n'est pas actif ou a des pénalités.", "Erreur", JOptionPane.ERROR_MESSAGE);
+	                    return;
+	                }
+
+	                // Récupérer le livre sélectionné
+	                Livre livre = livreDAO.getAllLivres().get(selectedIndex);
+
+	                // Vérifier si l'utilisateur a déjà emprunté ce livre
+	                if (empruntController.hasActiveEmpruntForUser (userIdStr, livre.getId())) {
+	                    JOptionPane.showMessageDialog(livreView, "Vous avez déjà emprunté ce livre.", "Erreur", JOptionPane.ERROR_MESSAGE);
+	                    return;
+	                }
+
+	                // Vérification du nombre d'exemplaires disponibles via la méthode DAO
+	                int exemplairesDisponibles = livreDAO.getExemplairesDisponibles(livre);
+	                if (exemplairesDisponibles <= 0) {
+	                    JOptionPane.showMessageDialog(livreView, "Ce livre n'est pas disponible pour emprunt.", "Avertissement", JOptionPane.WARNING_MESSAGE);
+	                    return;
+	                }
+
+	                // Si le livre est disponible
+	                livre.emprunter(); // Mettre à jour le nombre d'exemplaires disponibles du livre
+	                livreDAO.updateLivre(livre); // Mettre à jour le livre dans le DAO
+
+	                // Créer un nouvel emprunt
+	                Emprunt emprunt = new Emprunt(empruntController.generateEmpruntId(), livre.getId(), userIdStr, LocalDate.now(),
+	                        LocalDate.now().plusDays(7), null, false, 0);
+	                empruntController.ajouterEmprunt(emprunt);
+
+	                loadAndDisplayBooks();
+	                JOptionPane.showMessageDialog(livreView, "Livre emprunté avec succès !");
+	            } catch (Exception e) {
+	                JOptionPane.showMessageDialog(livreView, "Erreur lors de l'emprunt du livre : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+	            }
+	        }
+	    } else {
+	        JOptionPane.showMessageDialog(livreView, "Veuillez sélectionner un livre à emprunter.", "Avertissement", JOptionPane.WARNING_MESSAGE);
+	    }
+	}
+
+	
+	
+	public void afficherDetailsLivre() {
+	    int selectedIndex = livreView.getLivresTable().getSelectedRow(); // Utilisez getSelectedRow()
+	    if (selectedIndex != -1) {
+	        Livre livre = livreDAO.getAllLivres().get(selectedIndex);
+	        livreView.setDetails(livre);  // Assurez-vous que cette méthode affiche les informations pertinentes
+	    }
+	}
+
+
     
     private int generateId() {
         // Logique pour générer un nouvel ID unique pour un livre
